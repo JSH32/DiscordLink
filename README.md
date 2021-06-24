@@ -1,0 +1,2 @@
+## DiscordLink
+A discord to Minecraft interface. Allows cross chat between servers. Designed primarily for SMP survival servers. This plugin is very intrusive and may interfere with other chat plugins.
