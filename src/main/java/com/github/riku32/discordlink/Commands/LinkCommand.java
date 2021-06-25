@@ -6,11 +6,17 @@ import com.github.riku32.discordlink.Constants;
 import com.github.riku32.discordlink.DiscordLink;
 import com.github.riku32.discordlink.PlayerInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Button;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,7 +28,7 @@ public class LinkCommand extends BaseCommand {
     private DiscordLink plugin;
 
     @Default
-    private void link(Player player, String tag) throws SQLException {
+    private void link(Player player, String tag) throws SQLException, IOException {
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(player.getUniqueId());
         if (playerInfoOptional.isPresent()) {
             PlayerInfo playerInfo = playerInfoOptional.get();
@@ -31,7 +37,7 @@ public class LinkCommand extends BaseCommand {
                         "&cYou can't change your linked account after you have completed the link process"));
             } else {
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/unlink&7 or react to the X on the discord message",
+                        String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/unlink&7 or click cancel on the discord message",
                                 plugin.getJda().retrieveUserById(playerInfo.getDiscordID()).complete().getAsTag())));
             }
             return;
@@ -54,21 +60,40 @@ public class LinkCommand extends BaseCommand {
 
         if (plugin.getDatabase().isDiscordLinked(member.getId())) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&cThat discord account is already linked to another minecraft account"));
+                    "&cThat discord account is already linked or in the process of linking with another minecraft account"));
             return;
         }
 
-        MessageEmbed embed = new EmbedBuilder()
-                .setColor(Constants.Colors.SUCCESS)
-                .setTitle("Minecraft verification")
-                .setDescription("Minecraft to discord verification initiated. Please press the green button to verify the account link process. If you do not want to link accounts or this was not you, press the red button.")
-                .addField("Username", player.getName(), true)
-                .addField("UUID", player.getUniqueId().toString(), true)
+        // Need to get file and send it as an attachment, visage prevents the image from being directly embedded as a header
+        InputStream file = new URL(String.format("https://visage.surgeplay.com/head/256/%s", player.getUniqueId())).openStream();
+
+        Message verificationMessage = new MessageBuilder()
+                .setEmbed(new EmbedBuilder()
+                    .setColor(Constants.Colors.SUCCESS)
+                    .setTitle("Minecraft Link")
+                    .setThumbnail("attachment://head.png")
+                    .setDescription("Minecraft to Discord link initiated. Press verify to complete the account link process. If you do not want to link accounts or this was not you, press cancel." +
+                            "\n\n⚠ **THIS CANNOT BE UNDONE**")
+                    .addField("Username", player.getName(), true)
+                    .addField("UUID", player.getUniqueId().toString(), true)
+                    .build())
+                .setActionRows(ActionRow.of(
+                        Button.success("verify_link", "Verify"),
+                        Button.danger("cancel_link", "Cancel")
+                        ))
                 .build();
 
         member.getUser().openPrivateChannel().submit()
-                .thenCompose(privateChannel -> privateChannel.sendMessage(embed).submit())
+                .thenCompose(privateChannel -> privateChannel.sendMessage(verificationMessage)
+                        .addFile(file, "head.png")
+                        .submit())
                 .whenComplete((message, error) -> {
+                    try {
+                        file.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     if (error != null) {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 "&cYour discord account has DMs disabled. Please enable DMs and try again"));
@@ -81,10 +106,6 @@ public class LinkCommand extends BaseCommand {
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
-
-                    // Queue red and green square
-                    message.addReaction("\uD83D\uDFE9").queue();
-                    message.addReaction("\uD83D\uDFE5").queue();
 
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             "&7Please verify in your discord DMs"));

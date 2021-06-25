@@ -1,3 +1,15 @@
 discord:
   token:
   server_id:
+
+kick_messages:
+  not_in_guild: |-
+    &cYou must be a member of the discord server to play on this Minecraft server
+    &cYour Minecraft account is already linked to &e%tag%
+    &7&odiscord.gg/invite
+  banned: |-
+    &cYou have been banned from the discord server
+    &7&odiscord.gg/invite
+  tos: |-
+    &cYour account is ToS banned or deleted
+    &7&odiscord.gg/invite

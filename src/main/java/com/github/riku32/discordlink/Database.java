@@ -26,7 +26,7 @@ public class Database {
     }
 
     public Optional<PlayerInfo> getPlayerInfo(UUID uuid) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("SELECT discord_id, verified FROM users WHERE uuid = ?");
+        PreparedStatement statement = connection.prepareStatement("SELECT discord_id, verified, uuid FROM users WHERE uuid = ?");
         statement.setString(1, uuid.toString());
         ResultSet resultSet = statement.executeQuery();
 
@@ -34,6 +34,25 @@ public class Database {
         if (resultSet.next())
             result = Optional.of(new PlayerInfo(
                     resultSet.getString("discord_id"),
+                    UUID.fromString(resultSet.getString("uuid")),
+                    resultSet.getBoolean("verified")));
+
+        resultSet.close();
+        statement.close();
+
+        return result;
+    }
+
+    public Optional<PlayerInfo> getPlayerInfo(String discordID) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT discord_id, verified, uuid FROM users WHERE discord_id = ?");
+        statement.setString(1, discordID);
+        ResultSet resultSet = statement.executeQuery();
+
+        Optional<PlayerInfo> result = Optional.empty();
+        if (resultSet.next())
+            result = Optional.of(new PlayerInfo(
+                    resultSet.getString("discord_id"),
+                    UUID.fromString(resultSet.getString("uuid")),
                     resultSet.getBoolean("verified")));
 
         resultSet.close();
@@ -51,11 +70,25 @@ public class Database {
         statement.close();
     }
 
-    public void verifyPlayer(UUID uuid) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement("UPDATE users SET verified = 1 WHERE uuid = ? LIMIT 1");
-        statement.setString(1, uuid.toString());
+    public void verifyPlayer(String discordID) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("UPDATE users SET verified = 1 WHERE discord_id = ?");
+        statement.setString(1, discordID);
         statement.execute();
 
+        statement.close();
+    }
+
+    public void deletePlayer(UUID uuid) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM users WHERE uuid = ?");
+        statement.setString(1, uuid.toString());
+        statement.execute();
+        statement.close();
+    }
+
+    public void deletePlayer(String discordID) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM users WHERE discord_id = ?");
+        statement.setString(1, discordID);
+        statement.execute();
         statement.close();
     }
 
@@ -80,6 +113,35 @@ public class Database {
         statement.setString(2, messageID);
         statement.execute();
 
+        statement.close();
+    }
+
+    public boolean isVerificationMessage(String messageID) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("SELECT EXISTS(SELECT 1 FROM verifications WHERE message_id = ?)");
+        statement.setString(1, messageID);
+        ResultSet resultSet = statement.executeQuery();
+
+        boolean messageExist = false;
+        if (resultSet.next())
+            messageExist = resultSet.getBoolean(1);
+
+        resultSet.close();
+        statement.close();
+
+        return messageExist;
+    }
+
+    public void deleteVerificationMessage(String messageID) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM verifications WHERE message_id = ?");
+        statement.setString(1, messageID);
+        statement.execute();
+        statement.close();
+    }
+
+    public void deleteVerificationMessage(UUID uuid) throws SQLException {
+        PreparedStatement statement = connection.prepareStatement("DELETE FROM verifications WHERE uuid = ?");
+        statement.setString(1, uuid.toString());
+        statement.execute();
         statement.close();
     }
 }
