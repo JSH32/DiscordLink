@@ -34,17 +34,26 @@ public class VerificationListener extends ListenerAdapter {
         if (e.getChannelType().isGuild()) return;
 
         if (e.getComponentId().equals("verify_link") || e.getComponentId().equals("cancel_link")) {
-            if (!plugin.getDatabase().isVerificationMessage(e.getMessageId()))
-                return;
-
             Objects.requireNonNull(e.getMessage()).editMessage(new MessageBuilder()
                 .setContent(" ")
                 .setActionRows(ActionRow.of(e.getMessage().getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())
                 )).build()).queue();
 
             Optional<PlayerInfo> optionalPlayerInfo = plugin.getDatabase().getPlayerInfo(e.getUser().getId());
-            if (!optionalPlayerInfo.isPresent()) return;
+            if (!optionalPlayerInfo.isPresent()) {
+                e.deferEdit().queue();
+                return;
+            };
+
             PlayerInfo playerInfo = optionalPlayerInfo.get();
+
+            if (playerInfo.isVerified()) {
+                e.deferEdit().queue();
+                return;
+            };
+
+            if (!plugin.getDatabase().getMessageId(playerInfo.getDiscordID()).equals(e.getMessageId()))
+                return;
 
             OfflinePlayer offlinePlayer = plugin.getServer().getOfflinePlayer(playerInfo.getUuid());
 
@@ -56,7 +65,6 @@ public class VerificationListener extends ListenerAdapter {
                             .setColor(Constants.Colors.SUCCESS)
                             .build()).queue();
 
-                    plugin.getDatabase().deleteVerificationMessage(e.getMessageId());
                     plugin.getDatabase().verifyPlayer(e.getUser().getId());
 
                     if (offlinePlayer.isOnline()) {
@@ -86,7 +94,6 @@ public class VerificationListener extends ListenerAdapter {
                                 String.format("&e%s&7 has cancelled the linking process", e.getUser().getAsTag())));
                     }
 
-                    plugin.getDatabase().deleteVerificationMessage(e.getMessageId());
                     plugin.getDatabase().deletePlayer(e.getUser().getId());
                     break;
                 }

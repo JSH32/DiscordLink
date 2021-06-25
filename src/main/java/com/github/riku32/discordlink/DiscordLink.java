@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink;
 
 import co.aikar.commands.BukkitCommandManager;
+import com.github.riku32.discordlink.Commands.CancelCommand;
 import com.github.riku32.discordlink.Commands.LinkCommand;
 import com.github.riku32.discordlink.Events.PlayerActivity;
 import com.github.riku32.discordlink.Events.PlayerMove;
@@ -71,6 +72,7 @@ public final class DiscordLink extends JavaPlugin {
         // Add spigot commands
         BukkitCommandManager manager = new BukkitCommandManager(this);
         manager.registerCommand(new LinkCommand());
+        manager.registerCommand(new CancelCommand());
 
         // Add spigot events
         PlayerActivity playerActivity = new PlayerActivity(this);

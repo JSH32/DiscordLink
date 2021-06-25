@@ -44,7 +44,6 @@ public class PlayerActivity implements Listener {
             } catch (ErrorResponseException error) {
                 // Account does not exist, since verification is not complete just delete all the data
                 plugin.getDatabase().deletePlayer(e.getPlayer().getUniqueId());
-                plugin.getDatabase().deleteVerificationMessage(e.getPlayer().getUniqueId());
                 return;
             }
 
@@ -53,7 +52,7 @@ public class PlayerActivity implements Listener {
                     String.format("&7Please verify your account. Respond to the discord DM to &e%s&7 from &e%s",
                             user.getAsTag(), plugin.getJda().getSelfUser().getAsTag())));
             e.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&7If this is the wrong account do &e/unlink &7or press the red button on the discord DM"));
+                    "&7If this is the wrong account do &e/cancel &7or press the cancel button on the discord DM"));
 
             plugin.getFrozenPlayers().add(e.getPlayer().getUniqueId());
             e.setJoinMessage(null);

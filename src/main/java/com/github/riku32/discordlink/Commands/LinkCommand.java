@@ -37,7 +37,7 @@ public class LinkCommand extends BaseCommand {
                         "&cYou can't change your linked account after you have completed the link process"));
             } else {
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/unlink&7 or click cancel on the discord message",
+                        String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/cancel&7 or click cancel on the discord message",
                                 plugin.getJda().retrieveUserById(playerInfo.getDiscordID()).complete().getAsTag())));
             }
             return;
@@ -101,14 +101,13 @@ public class LinkCommand extends BaseCommand {
                     }
 
                     try {
-                        plugin.getDatabase().createVerificationMessage(player.getUniqueId(), message.getId());
-                        plugin.getDatabase().createPlayer(player.getUniqueId(), member.getId());
+                        plugin.getDatabase().createPlayer(player.getUniqueId(), member.getId(), message.getId());
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
 
                     player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            "&7Please verify in your discord DMs"));
+                            "&7Please verify in your discord DMs. Type &e/cancel&7 to cancel this process"));
                 });
     }
 }
