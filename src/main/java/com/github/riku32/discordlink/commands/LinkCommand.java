@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Commands;
+package com.github.riku32.discordlink.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Optional;
 
 @CommandAlias("link")

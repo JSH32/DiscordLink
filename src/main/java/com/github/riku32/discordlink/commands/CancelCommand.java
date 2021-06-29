@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Commands;
+package com.github.riku32.discordlink.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -10,7 +10,6 @@ import com.github.riku32.discordlink.DiscordLink;
 import com.github.riku32.discordlink.PlayerInfo;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 import org.bukkit.ChatColor;

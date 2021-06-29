@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Events;
+package com.github.riku32.discordlink.events;
 
 import com.github.riku32.discordlink.DiscordLink;
 import org.bukkit.event.EventHandler;

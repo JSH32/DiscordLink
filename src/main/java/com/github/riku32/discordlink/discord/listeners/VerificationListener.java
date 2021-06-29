@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Discord.Listeners;
+package com.github.riku32.discordlink.discord.listeners;
 
 import com.github.riku32.discordlink.Constants;
 import com.github.riku32.discordlink.DiscordLink;

@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Discord;
+package com.github.riku32.discordlink.discord;
 
 import com.freya02.botcommands.CommandList;
 import com.freya02.botcommands.PermissionProvider;

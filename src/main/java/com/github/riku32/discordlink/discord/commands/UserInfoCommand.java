@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Discord.Commands;
+package com.github.riku32.discordlink.discord.commands;
 
 import com.freya02.botcommands.slash.GuildSlashEvent;
 import com.freya02.botcommands.slash.SlashCommand;

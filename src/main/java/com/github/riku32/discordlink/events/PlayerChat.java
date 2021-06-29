@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.Events;
+package com.github.riku32.discordlink.events;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
