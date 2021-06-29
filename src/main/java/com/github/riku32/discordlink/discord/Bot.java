@@ -63,7 +63,8 @@ public class Bot {
                             GatewayIntent.DIRECT_MESSAGES)
                     .addEventListeners(new VerificationListener(plugin));
 
-            if (channelID != null) jdaBuilder.addEventListeners(new CrosschatListener(plugin));
+
+            if (plugin.getPluginConfig().isCrossChatEnabled()) jdaBuilder.addEventListeners(new CrosschatListener(plugin));
 
             jda = jdaBuilder.build().awaitReady();
         } catch (LoginException | InterruptedException e) {

@@ -17,7 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import net.md_5.bungee.api.ChatColor;
 
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Optional;
 
 public class PlayerActivity implements Listener {
@@ -31,8 +30,7 @@ public class PlayerActivity implements Listener {
     private void onPlayerJoin(PlayerJoinEvent e) throws SQLException {
         setPlayerCount(plugin.getServer().getOnlinePlayers().size());
 
-        if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled")))
-            e.setJoinMessage(null);
+        if (plugin.getPluginConfig().isStatusEnabled()) e.setJoinMessage(null);
 
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getPlayer().getUniqueId());
         if (!playerInfoOptional.isPresent()) {
@@ -68,13 +66,12 @@ public class PlayerActivity implements Listener {
             guild.retrieveBan(user).queue(
                     (banned) -> {
                         Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
-                                String.valueOf(plugin.getConfig().get("kick_messages.banned")))));
+                                String.valueOf(plugin.getPluginConfig().getKickBanned()))));
                     },
                     (not) -> {
                         guild.retrieveMember(user).queue(member -> {
-                            if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) {
-                                String joinMessage = ChatColor.translateAlternateColorCodes('&',
-                                        String.valueOf(plugin.getConfig().get("status_messages.join"))
+                            if (plugin.getPluginConfig().isStatusEnabled()) {
+                                String joinMessage = ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().getStatusJoin()
                                                 .replaceAll("%color%", Util.colorToChatString(
                                                         member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                                                 .replaceAll("%username%", e.getPlayer().getDisplayName())
@@ -92,14 +89,14 @@ public class PlayerActivity implements Listener {
                                         .queue();
                         }, ignored -> {
                             e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
-                                    String.valueOf(plugin.getConfig().get("kick_messages.not_in_guild")).replaceAll("%tag%", user.getAsTag())));
+                                    plugin.getPluginConfig().getKickNotInGuild().replaceAll("%tag%", user.getAsTag())));
                         });
                     }
             );
         }, ignored -> {
             // Do not delete the user from database so they stay banned if they get ToS banned or deactivate account
             e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
-                    String.valueOf(plugin.getConfig().get("kick_messages.tos"))));
+                    plugin.getPluginConfig().getKickToS()));
         });
     }
 
@@ -108,15 +105,14 @@ public class PlayerActivity implements Listener {
         setPlayerCount(plugin.getServer().getOnlinePlayers().size() - 1);
         plugin.getFrozenPlayers().remove(e.getPlayer().getUniqueId());
 
-        boolean statusMessages = (boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"));
-        if (statusMessages) e.setQuitMessage(null);
+        if (plugin.getPluginConfig().isStatusEnabled()) e.setQuitMessage(null);
 
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getPlayer().getUniqueId());
         if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
             plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
-                if (statusMessages) {
+                if (plugin.getPluginConfig().isStatusEnabled()) {
                     String quitMessage = ChatColor.translateAlternateColorCodes('&',
-                            String.valueOf(plugin.getConfig().get("status_messages.quit"))
+                            plugin.getPluginConfig().getStatusQuit()
                                     .replaceAll("%color%", Util.colorToChatString(
                                             member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                                     .replaceAll("%username%", e.getPlayer().getDisplayName())
@@ -143,16 +139,15 @@ public class PlayerActivity implements Listener {
         else
             causeWithoutName = e.getDeathMessage().substring(e.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
 
-        boolean statusMessages = (boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"));
-        if (statusMessages) e.setDeathMessage(null);
+        if (plugin.getPluginConfig().isStatusEnabled()) e.setDeathMessage(null);
 
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getEntity().getUniqueId());
         if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
             plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
                 // Send custom death message if status is enabled, else handle normally
-                if (statusMessages) {
+                if (plugin.getPluginConfig().isStatusEnabled()) {
                     Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                            String.valueOf(plugin.getConfig().get("status_messages.death"))
+                            plugin.getPluginConfig().getStatusDeath()
                                     .replaceAll("%color%", Util.colorToChatString(
                                             member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                                     .replaceAll("%username%", e.getEntity().getDisplayName())

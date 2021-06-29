@@ -81,7 +81,7 @@ public class CrosschatListener extends ListenerAdapter {
         }
 
         Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                String.valueOf(plugin.getConfig().get("chat.format.discord"))
+                plugin.getPluginConfig().getDiscordFormat()
                         .replaceAll("%color%", Util.colorToChatString(
                                 member.getColor() == null ? ChatColor.GRAY.getColor() : member.getColor()))
                         .replaceAll("%username%", Objects.requireNonNull(offlinePlayer.getName()))

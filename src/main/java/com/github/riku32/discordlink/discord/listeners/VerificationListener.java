@@ -90,16 +90,16 @@ public class VerificationListener extends ListenerAdapter {
 
                         plugin.getFrozenPlayers().remove(player.getUniqueId());
 
-                        if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) {
+                        if (plugin.getPluginConfig().isStatusEnabled()) {
                             Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                                    String.valueOf(plugin.getConfig().get("status_messages.join"))
+                                    plugin.getPluginConfig().getStatusJoin()
                                             .replaceAll("%color%", Util.colorToChatString(
                                                     member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                                             .replaceAll("%username%", offlinePlayer.getPlayer().getName())
                                             .replaceAll("%tag%", e.getUser().getAsTag())));
                         }
 
-                        if ((boolean) Objects.requireNonNull(plugin.getConfig().get("chat.crosschat.enabled"))) {
+                        if (plugin.getPluginConfig().isCrossChatEnabled()) {
                             if (plugin.getBot().getChannel() != null)
                                 plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
                                         .setColor(Constants.Colors.SUCCESS)

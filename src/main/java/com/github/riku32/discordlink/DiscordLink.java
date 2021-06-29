@@ -9,7 +9,6 @@ import com.github.riku32.discordlink.events.PlayerActivity;
 import com.github.riku32.discordlink.events.PlayerChat;
 import com.github.riku32.discordlink.events.PlayerMove;
 import lombok.Getter;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -25,21 +24,22 @@ public final class DiscordLink extends JavaPlugin {
     @Getter
     private final Set<UUID> frozenPlayers = new HashSet<>();
 
+    @Getter
+    private Config pluginConfig;
+
     // Crosschat message relay from in-game chat
     private WebhookClient messageRelay = null;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
-        FileConfiguration config = getConfig();
+        this.pluginConfig = new Config(super.getConfig());
 
         this.bot = new Bot(this,
-                String.valueOf(config.get("discord.token")),
-                String.valueOf(config.get("discord.server_id")),
-                String.valueOf(config.get("discord.owner_id")),
-                !(boolean) Objects.requireNonNull(config.get("chat.enabled"))
-                        || !(boolean) Objects.requireNonNull(config.get("chat.crosschat.enabled"))
-                        ? null : String.valueOf(config.get("chat.crosschat.channel_id"))
+                pluginConfig.getToken(),
+                pluginConfig.getServerID(),
+                pluginConfig.getOwnerID(),
+                pluginConfig.getChannelID()
         );
 
         try {
@@ -50,9 +50,7 @@ public final class DiscordLink extends JavaPlugin {
         }
 
         // Set in-game message relay
-        if ((boolean) Objects.requireNonNull(config.get("chat.enabled")) && (boolean) Objects.requireNonNull(config.get("chat.crosschat.enabled")))
-            if (config.get("chat.crosschat.webhook") != null)
-                this.messageRelay = WebhookClient.withUrl(String.valueOf(config.get("chat.crosschat.webhook")));
+        this.messageRelay = pluginConfig.getWebhook() == null ? null : WebhookClient.withUrl(pluginConfig.getWebhook());
 
         // Add spigot commands
         BukkitCommandManager manager = new BukkitCommandManager(this);

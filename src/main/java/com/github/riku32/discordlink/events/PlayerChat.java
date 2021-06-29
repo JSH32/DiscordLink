@@ -12,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.sql.SQLException;
-import java.util.Objects;
 import java.util.Optional;
 
 public class PlayerChat implements Listener {
@@ -47,14 +46,14 @@ public class PlayerChat implements Listener {
 
         PlayerInfo playerInfo = optionalPlayerInfo.get();
 
-        if (!(boolean) Objects.requireNonNull(plugin.getConfig().get("chat.enabled"))) return;
+        if (!plugin.getPluginConfig().isChatEnabled()) return;
 
         // Due to the nature of spigot chat messages it is not a good idea to disable the event and broadcast later
         // Luckily chat is handled on async threads anyway and members are cached after the first time so this is not that huge of a problem
         Member member = plugin.getBot().getGuild().retrieveMemberById(playerInfo.getDiscordID()).complete();
 
         e.setFormat(ChatColor.translateAlternateColorCodes('&',
-                String.valueOf(plugin.getConfig().get("chat.format.player"))
+                plugin.getPluginConfig().getPlayerFormat()
                         .replaceAll("%color%", Util.colorToChatString(
                                 member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                         .replaceAll("%username%", e.getPlayer().getName())
