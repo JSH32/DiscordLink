@@ -1,7 +1,7 @@
 ![Banner](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/Banner.png)
 
 ## DiscordLink
-A discord to Minecraft interface. Designed primarily for SMP servers. This plugin may interfere with other chat plugins if you have the chat features enabled. This plugin aims to connect your Minecraft and Discord server in the most seamless and easy to use way. Configuration is extremely easy, and you can disable or modify and features you desire.
+A discord to Minecraft interface. Designed primarily for SMP servers. This plugin may interfere with other chat plugins if you have the chat features enabled. This plugin aims to connect your Minecraft and Discord server in a sleek and modern way. Configuration is extremely easy, and you can disable or modify and features you desire.
 
 **Features**
 - Linking accounts
