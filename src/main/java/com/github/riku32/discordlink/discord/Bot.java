@@ -22,10 +22,10 @@ import java.util.concurrent.*;
 
 public class Bot {
     @Getter
-    private JDA jda;
+    private final JDA jda;
 
     @Getter
-    private Guild guild;
+    private final Guild guild;
 
     // This is null if crosschat is disabled
     @Getter
@@ -33,7 +33,7 @@ public class Bot {
 
     private final ExecutorService callbackThreadPool;
 
-    public Bot(DiscordLink plugin, String token, String guildID, String ownerID, String channelID) {
+    public Bot(DiscordLink plugin, String token, String guildID, String ownerID, String channelID) throws LoginException, InterruptedException {
         callbackThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), pool -> {
             final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
             worker.setName("DiscordLink - JDA Callback " + worker.getPoolIndex());
@@ -46,32 +46,26 @@ public class Bot {
         final ThreadFactory rateLimitThreadFactory = new ThreadFactoryBuilder().setNameFormat("DiscordLink - JDA Rate Limit").build();
         final ScheduledExecutorService rateLimitThreadPool = new ScheduledThreadPoolExecutor(5, rateLimitThreadFactory);
 
-        try {
-            JDABuilder jdaBuilder = JDABuilder.createDefault(String.valueOf(token))
-                    .setChunkingFilter(ChunkingFilter.ALL)
-                    .setMemberCachePolicy(MemberCachePolicy.ALL)
-                    .setWebsocketFactory(new WebSocketFactory()
-                            .setDualStackMode(DualStackMode.IPV4_ONLY)
-                    )
-                    .setCallbackPool(callbackThreadPool, false)
-                    .setGatewayPool(gatewayThreadPool, true)
-                    .setRateLimitPool(rateLimitThreadPool, true)
-                    .setAutoReconnect(true)
-                    .setBulkDeleteSplittingEnabled(false)
-                    .enableIntents(GatewayIntent.GUILD_MEMBERS,
-                            GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                            GatewayIntent.DIRECT_MESSAGES)
-                    .addEventListeners(new VerificationListener(plugin));
+        JDABuilder jdaBuilder = JDABuilder.createDefault(String.valueOf(token))
+                .setChunkingFilter(ChunkingFilter.ALL)
+                .setMemberCachePolicy(MemberCachePolicy.ALL)
+                .setWebsocketFactory(new WebSocketFactory()
+                        .setDualStackMode(DualStackMode.IPV4_ONLY)
+                )
+                .setCallbackPool(callbackThreadPool, false)
+                .setGatewayPool(gatewayThreadPool, true)
+                .setRateLimitPool(rateLimitThreadPool, true)
+                .setAutoReconnect(true)
+                .setBulkDeleteSplittingEnabled(false)
+                .enableIntents(GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                        GatewayIntent.DIRECT_MESSAGES)
+                .addEventListeners(new VerificationListener(plugin));
 
 
-            if (plugin.getPluginConfig().isCrossChatEnabled()) jdaBuilder.addEventListeners(new CrosschatListener(plugin));
+        if (plugin.getPluginConfig().isCrossChatEnabled()) jdaBuilder.addEventListeners(new CrosschatListener(plugin));
 
-            jda = jdaBuilder.build().awaitReady();
-        } catch (LoginException | InterruptedException e) {
-            plugin.getLogger().severe("Unable to login to discord");
-            e.printStackTrace();
-            return;
-        }
+        jda = jdaBuilder.build().awaitReady();
 
         this.guild = jda.getGuildById(guildID);
         if (this.guild == null)
@@ -84,6 +78,8 @@ public class Bot {
         CommandsBuilder commandsBuilder = CommandsBuilder.withPrefix("!", Long.parseLong(ownerID))
                 .setPermissionProvider(new PermissionManager(this.guild))
                 .registerConstructorParameter(DiscordLink.class, ignored -> plugin)
+                // Disable both help commands, we only use a few slash commands so its self explanatory
+                .disableSlashHelpCommand()
                 .disableHelpCommand(event -> {});
 
         try {
