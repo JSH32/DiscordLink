@@ -25,12 +25,7 @@ public class Database {
         statement.setString(1, uuid.toString());
         ResultSet resultSet = statement.executeQuery();
 
-        Optional<PlayerInfo> result = Optional.empty();
-        if (resultSet.next())
-            result = Optional.of(new PlayerInfo(
-                    resultSet.getString("discord_id"),
-                    UUID.fromString(resultSet.getString("uuid")),
-                    resultSet.getBoolean("verified")));
+        Optional<PlayerInfo> result = playerInfoGet(resultSet);
 
         resultSet.close();
         statement.close();
@@ -43,17 +38,27 @@ public class Database {
         statement.setString(1, discordID);
         ResultSet resultSet = statement.executeQuery();
 
-        Optional<PlayerInfo> result = Optional.empty();
-        if (resultSet.next())
-            result = Optional.of(new PlayerInfo(
-                    resultSet.getString("discord_id"),
-                    UUID.fromString(resultSet.getString("uuid")),
-                    resultSet.getBoolean("verified")));
+        Optional<PlayerInfo> result = playerInfoGet(resultSet);
 
         resultSet.close();
         statement.close();
 
         return result;
+    }
+
+    /**
+     * Get player info from {@link java.sql.ResultSet} with valid fields
+     *
+     * @param resultSet with discord_id, uuid, and verified
+     * @return player info if it exists
+     */
+    private Optional<PlayerInfo> playerInfoGet(ResultSet resultSet) throws SQLException {
+        if (resultSet.next())
+            return Optional.of(new PlayerInfo(
+                    resultSet.getString("discord_id"),
+                    UUID.fromString(resultSet.getString("uuid")),
+                    resultSet.getBoolean("verified")));
+        return Optional.empty();
     }
 
     public void createPlayer(UUID uuid, String discordID, String messageID) throws SQLException {
