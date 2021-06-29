@@ -2,20 +2,18 @@ package com.github.riku32.discordlink;
 
 import club.minnced.discord.webhook.WebhookClient;
 import co.aikar.commands.BukkitCommandManager;
-import com.github.riku32.discordlink.Commands.CancelCommand;
-import com.github.riku32.discordlink.Commands.LinkCommand;
-import com.github.riku32.discordlink.Discord.Bot;
-import com.github.riku32.discordlink.Events.PlayerActivity;
-import com.github.riku32.discordlink.Events.PlayerChat;
-import com.github.riku32.discordlink.Events.PlayerMove;
+import com.github.riku32.discordlink.commands.CancelCommand;
+import com.github.riku32.discordlink.commands.LinkCommand;
+import com.github.riku32.discordlink.discord.Bot;
+import com.github.riku32.discordlink.events.PlayerActivity;
+import com.github.riku32.discordlink.events.PlayerChat;
+import com.github.riku32.discordlink.events.PlayerMove;
 import lombok.Getter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public final class DiscordLink extends JavaPlugin {
     @Getter
@@ -25,7 +23,7 @@ public final class DiscordLink extends JavaPlugin {
     private Database database;
 
     @Getter
-    private final ArrayList<UUID> frozenPlayers = new ArrayList<>();
+    private final Set<UUID> frozenPlayers = new HashSet<>();
 
     // Crosschat message relay from in-game chat
     private WebhookClient messageRelay = null;
@@ -75,6 +73,6 @@ public final class DiscordLink extends JavaPlugin {
         // Shut down relay executor
         if (this.messageRelay != null) this.messageRelay.close();
 
-        bot.getJda().shutdown();
+        bot.shutdown();
     }
 }
