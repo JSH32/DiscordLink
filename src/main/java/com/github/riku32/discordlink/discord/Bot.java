@@ -31,7 +31,7 @@ public class Bot {
     @Getter
     private TextChannel channel = null;
 
-    private ExecutorService callbackThreadPool;
+    private final ExecutorService callbackThreadPool;
 
     public Bot(DiscordLink plugin, String token, String guildID, String ownerID, String channelID) {
         callbackThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), pool -> {
