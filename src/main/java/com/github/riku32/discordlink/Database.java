@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class Database {
-    private Connection connection;
+    private final Connection connection;
 
     public Database(File dataFolder) throws SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:" + new File(dataFolder, "database.db"));

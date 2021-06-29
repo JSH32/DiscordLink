@@ -1,6 +1,27 @@
 discord:
   token:
   server_id:
+  owner_id:
+
+# Should chat be controlled by this plugin
+chat:
+  enabled: true
+  # This format will only show in game depending on where the message came from
+  format:
+    player: '&7[&x&7&3&a&a&4&8✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+
+    # This will never show if crosschat is disabled
+    discord: '&7[&x&5&8&6&5&f&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+
+  # This will allow minecraft and discord chats/events to communicate with each other in a single channel
+  crosschat:
+    enabled: true
+
+    # This channel ID must be in the specified server_id server
+    channel_id:
+
+    # This webhook CAN be a different channel than channel_id but SHOULDN'T
+    webhook:
 
 kick_messages:
   not_in_guild: |-
@@ -13,3 +34,10 @@ kick_messages:
   tos: |-
     &cYour account is ToS banned or deleted
     &7&odiscord.gg/invite
+
+# If enabled join message wont be sent until the user has linked their account
+status_messages:
+  enabled: false
+  join: '%color%%username% &7(&o%tag%&7) joined the game'
+  quit: '%color%%username% &7(&o%tag%&7) left the game'
+  death: '%color%%username% &7(&o%tag%&7) %cause%'

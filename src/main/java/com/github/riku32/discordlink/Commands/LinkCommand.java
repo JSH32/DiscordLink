@@ -38,14 +38,14 @@ public class LinkCommand extends BaseCommand {
             } else {
                 player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                         String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/cancel&7 or click cancel on the discord message",
-                                plugin.getJda().retrieveUserById(playerInfo.getDiscordID()).complete().getAsTag())));
+                                plugin.getBot().getJda().retrieveUserById(playerInfo.getDiscordID()).complete().getAsTag())));
             }
             return;
         }
 
         Member member;
         try {
-            member = Objects.requireNonNull(plugin.getJda().getGuildById(plugin.getGuildID())).getMemberByTag(tag);
+            member = plugin.getBot().getGuild().getMemberByTag(tag);
         } catch (IllegalArgumentException ignored) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     "&cInvalid tag provided, must be in the discord server to link"));
@@ -78,8 +78,8 @@ public class LinkCommand extends BaseCommand {
                     .addField("UUID", player.getUniqueId().toString(), true)
                     .build())
                 .setActionRows(ActionRow.of(
-                        Button.success("verify_link", "Verify"),
-                        Button.danger("cancel_link", "Cancel")
+                        Button.success("link.verify", "Verify"),
+                        Button.danger("link.cancel", "Cancel")
                         ))
                 .build();
 
@@ -88,12 +88,6 @@ public class LinkCommand extends BaseCommand {
                         .addFile(file, "head.png")
                         .submit())
                 .whenComplete((message, error) -> {
-                    try {
-                        file.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
                     if (error != null) {
                         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 "&cYour discord account has DMs disabled. Please enable DMs and try again"));

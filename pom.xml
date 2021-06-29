@@ -85,6 +85,10 @@
             <id>aikar</id>
             <url>https://repo.aikar.co/content/groups/aikar/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -121,6 +125,11 @@
             <artifactId>lombok</artifactId>
             <version>1.18.20</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.freya022</groupId>
+            <artifactId>BotCommands</artifactId>
+            <version>7dccb0d</version>
         </dependency>
     </dependencies>
 </project>

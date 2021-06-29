@@ -45,14 +45,14 @@ public class CancelCommand extends BaseCommand {
 
         String messageID = plugin.getDatabase().getMessageId(playerInfo.getDiscordID());
         if (messageID != null) {
-            plugin.getJda().openPrivateChannelById(playerInfo.getDiscordID()).queue(channel -> {
-                Message message =  channel.retrieveMessageById(messageID).complete();
-                if (message == null) return;
-                message.editMessage(new MessageBuilder()
-                        .setContent(" ")
-                        .setActionRows(ActionRow.of(message.getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())))
-                        .build())
-                        .queue();
+            plugin.getBot().getJda().openPrivateChannelById(playerInfo.getDiscordID()).queue(channel -> {
+                channel.retrieveMessageById(messageID).queue(message -> {
+                    message.editMessage(new MessageBuilder()
+                            .setContent(" ")
+                            .setActionRows(ActionRow.of(message.getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())))
+                            .build())
+                            .queue();
+                });
             });
         }
 
@@ -61,7 +61,7 @@ public class CancelCommand extends BaseCommand {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 "&7You have cancelled the linking process"));
 
-        Objects.requireNonNull(plugin.getJda().retrieveUserById(playerInfo.getDiscordID()))
+        Objects.requireNonNull(plugin.getBot().getJda().retrieveUserById(playerInfo.getDiscordID()))
                 .complete().openPrivateChannel().queue((channel) -> {
                     channel.sendMessage(new EmbedBuilder()
                             .setTitle("Cancelled")
