@@ -25,6 +25,14 @@ chat:
     # If it is different messages will not be relayed in the same place
     webhook:
 
+# Hijack and control player status messages
+# If enabled these message wont be sent until the user has linked their account
+status_messages:
+  enabled: false
+  join: '%color%%username% &7(&o%tag%&7) joined the game'
+  quit: '%color%%username% &7(&o%tag%&7) left the game'
+  death: '%color%%username% &7(&o%tag%&7) %cause%'
+
 kick_messages:
   not_in_guild: |-
     &cYou must be a member of the discord server to play on this Minecraft server
@@ -36,11 +44,3 @@ kick_messages:
   tos: |-
     &cYour account is ToS banned or deleted
     &7&odiscord.gg/invite
-
-# Hijack and control player status messages
-# If enabled these message wont be sent until the user has linked their account
-status_messages:
-  enabled: false
-  join: '%color%%username% &7(&o%tag%&7) joined the game'
-  quit: '%color%%username% &7(&o%tag%&7) left the game'
-  death: '%color%%username% &7(&o%tag%&7) %cause%'
