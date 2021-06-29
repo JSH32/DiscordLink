@@ -1,7 +1,10 @@
 package com.github.riku32.discordlink.Events;
 
+import com.github.riku32.discordlink.Constants;
 import com.github.riku32.discordlink.DiscordLink;
 import com.github.riku32.discordlink.PlayerInfo;
+import com.github.riku32.discordlink.Util;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import org.bukkit.Bukkit;
@@ -13,7 +16,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import net.md_5.bungee.api.ChatColor;
 
-import java.awt.*;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,25 +71,28 @@ public class PlayerActivity implements Listener {
                                 String.valueOf(plugin.getConfig().get("kick_messages.banned")))));
                     },
                     (not) -> {
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            if (guild.getMemberById(user.getId()) == null) {
-                                e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
-                                        String.valueOf(plugin.getConfig().get("kick_messages.not_in_guild")).replaceAll("%tag%", user.getAsTag())));
-                                return;
+                        guild.retrieveMember(user).queue(member -> {
+                            if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) {
+                                String joinMessage = ChatColor.translateAlternateColorCodes('&',
+                                        String.valueOf(plugin.getConfig().get("status_messages.join"))
+                                                .replaceAll("%color%", Util.colorToChatString(
+                                                        member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
+                                                .replaceAll("%username%", e.getPlayer().getDisplayName())
+                                                .replaceAll("%tag%", user.getAsTag()));
+                                Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcastMessage(joinMessage));
                             }
 
-                            guild.retrieveMember(user).queue(member -> {
-                                Color color = member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor();
-
-                                if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) {
-                                    String joinMessage = ChatColor.translateAlternateColorCodes('&',
-                                            String.valueOf(plugin.getConfig().get("status_messages.join"))
-                                                    .replaceAll("%color%", colorToBungeeString(color))
-                                                    .replaceAll("%username%", e.getPlayer().getDisplayName())
-                                                    .replaceAll("%tag%", user.getAsTag()));
-                                    Bukkit.broadcastMessage(joinMessage);
-                                }
-                            });
+                            e.getPlayer().setGameMode(plugin.getServer().getDefaultGameMode());
+                            if (plugin.getBot().getChannel() != null)
+                                plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+                                        .setColor(Constants.Colors.SUCCESS)
+                                        .setAuthor(String.format("%s (%s) has joined", user.getName(), Bukkit.getOfflinePlayer(playerInfoOptional.get().getUuid()).getName()),
+                                                null, user.getAvatarUrl())
+                                        .build())
+                                        .queue();
+                        }, ignored -> {
+                            e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
+                                    String.valueOf(plugin.getConfig().get("kick_messages.not_in_guild")).replaceAll("%tag%", user.getAsTag())));
                         });
                     }
             );
@@ -103,60 +108,68 @@ public class PlayerActivity implements Listener {
         setPlayerCount(plugin.getServer().getOnlinePlayers().size() - 1);
         plugin.getFrozenPlayers().remove(e.getPlayer().getUniqueId());
 
-        if ((boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) {
-            e.setQuitMessage(null); // Disable default quit message since we need to send one in async task
+        boolean statusMessages = (boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"));
+        if (statusMessages) e.setQuitMessage(null);
 
-            Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getPlayer().getUniqueId());
-            if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
-                plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
-                    Color color = member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor();
+        Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getPlayer().getUniqueId());
+        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
+            plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
+                if (statusMessages) {
                     String quitMessage = ChatColor.translateAlternateColorCodes('&',
                             String.valueOf(plugin.getConfig().get("status_messages.quit"))
-                                    .replaceAll("%color%", colorToBungeeString(color))
+                                    .replaceAll("%color%", Util.colorToChatString(
+                                            member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
                                     .replaceAll("%username%", e.getPlayer().getDisplayName())
                                     .replaceAll("%tag%", member.getUser().getAsTag()));
                     Bukkit.broadcastMessage(quitMessage);
-                });
-            }
+                }
+
+                if (plugin.getBot().getChannel() != null)
+                    plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+                            .setColor(Constants.Colors.FAIL)
+                            .setAuthor(String.format("%s (%s) has left", member.getUser().getName(), Bukkit.getOfflinePlayer(playerInfoOptional.get().getUuid()).getName()),
+                                    null, member.getUser().getAvatarUrl())
+                            .build())
+                            .queue();
+            });
         }
     }
 
     @EventHandler
     private void onPlayerDeath(PlayerDeathEvent e) throws SQLException {
-        if (!(boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"))) return;
-
         final String causeWithoutName;
         if (e.getDeathMessage() == null)
             causeWithoutName = "died";
         else
-            causeWithoutName = e.getDeathMessage().substring(e.getDeathMessage().indexOf(" ") + 1);
+            causeWithoutName = e.getDeathMessage().substring(e.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
 
-        // Send death through broadcast instead due to async
-        e.setDeathMessage(null);
+        boolean statusMessages = (boolean) Objects.requireNonNull(plugin.getConfig().get("status_messages.enabled"));
+        if (statusMessages) e.setDeathMessage(null);
 
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getEntity().getUniqueId());
         if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
             plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
-                Color color = member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor();
-                String deathMessage = ChatColor.translateAlternateColorCodes('&',
-                        String.valueOf(plugin.getConfig().get("status_messages.death"))
-                                .replaceAll("%color%", colorToBungeeString(color))
-                                .replaceAll("%username%", e.getEntity().getDisplayName())
-                                .replaceAll("%tag%", member.getUser().getAsTag()))
-                                .replaceAll("%cause%", causeWithoutName);
-                Bukkit.broadcastMessage(deathMessage);
+                // Send custom death message if status is enabled, else handle normally
+                if (statusMessages) {
+                    Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                            String.valueOf(plugin.getConfig().get("status_messages.death"))
+                                    .replaceAll("%color%", Util.colorToChatString(
+                                            member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
+                                    .replaceAll("%username%", e.getEntity().getDisplayName())
+                                    .replaceAll("%tag%", member.getUser().getAsTag()))
+                            .replaceAll("%cause%", causeWithoutName));
+                }
+
+                if (plugin.getBot().getChannel() != null)
+                    plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+                            .setColor(Constants.Colors.FAIL)
+                            .setAuthor(String.format("%s (%s) %s", member.getUser().getName(),
+                                    Bukkit.getOfflinePlayer(playerInfoOptional.get().getUuid()).getName(), causeWithoutName),
+                                    null, member.getUser().getAvatarUrl())
+                            .build())
+                            .queue();
             });
         }
-    }
-
-    private String colorToBungeeString(Color color) {
-        String hexColor = String.format("%02x%02x%02x", color.getRed(), color.getGreen(), color.getBlue());
-        String newString = ChatColor.COLOR_CHAR + "x";
-
-        for (int i = 0; i < hexColor.length(); i++)
-            newString = newString.concat(String.valueOf(ChatColor.COLOR_CHAR) + hexColor.charAt(i));
-
-        return newString;
     }
 
     public void setPlayerCount(int playerCount) {
