@@ -9,8 +9,10 @@ import com.github.riku32.discordlink.events.PlayerActivity;
 import com.github.riku32.discordlink.events.PlayerChat;
 import com.github.riku32.discordlink.events.PlayerMove;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.security.auth.login.LoginException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -35,18 +37,27 @@ public final class DiscordLink extends JavaPlugin {
         saveDefaultConfig();
         this.pluginConfig = new Config(super.getConfig());
 
-        this.bot = new Bot(this,
-                pluginConfig.getToken(),
-                pluginConfig.getServerID(),
-                pluginConfig.getOwnerID(),
-                pluginConfig.getChannelID()
-        );
-
         try {
             database = new Database(getDataFolder());
         } catch (SQLException e) {
             getLogger().severe("Unable to create database");
             e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        try {
+            this.bot = new Bot(this,
+                    pluginConfig.getToken(),
+                    pluginConfig.getServerID(),
+                    pluginConfig.getOwnerID(),
+                    pluginConfig.getChannelID()
+            );
+        } catch (LoginException | InterruptedException e) {
+            getLogger().severe("Could not login to discord");
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         // Set in-game message relay
