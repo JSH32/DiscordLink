@@ -9,8 +9,8 @@ A discord to Minecraft interface. Designed primarily for SMP servers. This plugi
 - Ban control/sync
 
 ### Screenshots
-![Register](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/register.png)
-![Discord link](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/link.png)
-![Cancel](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/cancel.png)
-![In-game Chat](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/minecraftchat.png)
-![Discord chat](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/discordchat.png)
+![Register](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/register.png) <br>
+![Discord link](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/link.png) <br>
+![Cancel](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/cancel.png) <br>
+![In-game Chat](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/minecraftchat.png) <br>
+![Discord chat](https://raw.githubusercontent.com/Riku32/DiscordLink/master/.github/screenshots/discordchat.png) <br>
