@@ -16,17 +16,25 @@ chat:
 
   # This format will only show in game depending on where the message came from
   # Unlinked format only required if link.required is set to false
-  # tag and color variables are only valid in linked messages
+  #
+  # Variables:
+  #   %username% - Minecraft username
+  #   %message% - Message contents
+  #
+  # Linked Only Variables:
+  #   %color% - Top role color
+  #   %tag% - Discord Tag
   format:
-    # Message formats for users
+    # Message formats for player messages
     player:
-      linked: '&7[&x&9&f&e&4&6&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
-      unlinked: '&7[&x&9&f&e&4&6&2✎&7] &7%username% » &r%message%'
+      linked: '&7[&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+      unlinked: '&7[&2✎&7] &7%username% » &r%message%'
 
+    # Message formats for discord messages
     # This will never show if crosschat is disabled
     discord:
-      linked: '&7[&x&6&e&7&9&f&3✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
-      unlinked: '&7[&x&6&e&7&9&f&3✎&7] %color%%tag%&7 » &r%message%'
+      linked: '&7[&9✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+      unlinked: '&7[&9✎&7] %color%%tag%&7 » &r%message%'
 
   # This will allow minecraft and discord chats/events to communicate with each other in a single channel
   crosschat:
@@ -43,6 +51,14 @@ chat:
 # If enabled these message wont be sent until the user has linked their account
 # Unlinked format only required if link.required is set to false
 # tag and color variables are only valid in linked messages
+#
+# Variables:
+#   %username% - Minecraft username
+#   %message% - Message contents
+#
+# Linked Only Variables:
+#   %color% - Top role color
+#   %tag% - Discord Tag
 status_messages:
   enabled: true
   join:
@@ -58,13 +74,21 @@ status_messages:
     unlinked: '&7%username% %cause%'
 
 kick_messages:
+  # Only happens if player is linked, link.allow_unlink is false, and player leaves the guild
   not_in_guild: |-
     &cYou must be a member of the discord server to play on this Minecraft server
     &cYour Minecraft account is already linked to &e%tag%
     &7&odiscord.gg/invite
+
+  # When user is linked and gets banned from discord
+  # In the future this will be an actual ban listener and not a kick and can be disabled
   banned: |-
     &cYou have been banned from the discord server
     &7&odiscord.gg/invite
+
+  # If the account was ToS banned or deleted
+  # This assumes that you did something bad and shouldn't be able to play
+  # In the future this will be an actual listener and not a kick and can be disabled
   tos: |-
     &cYour account is ToS banned or deleted
     &7&odiscord.gg/invite
