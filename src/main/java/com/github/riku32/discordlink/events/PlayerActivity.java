@@ -106,9 +106,30 @@ public class PlayerActivity implements Listener {
                                         null, user.getAvatarUrl())
                                 .build())
                                 .queue();
-                    }, ignored -> e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
-                            plugin.getPluginConfig().getKickNotInGuild().replaceAll("%tag%", user.getAsTag()))))
-            );
+                    }, ignored -> {
+                        // User left server but unlink is allowed so just delete their account
+                        if (plugin.getPluginConfig().isAllowUnlink()) {
+                            try {
+                                plugin.getDatabase().deletePlayer(e.getPlayer().getUniqueId());
+                            } catch (SQLException exception) {
+                                exception.printStackTrace();
+                            }
+
+                            e.getPlayer().sendMessage(ChatColor.RED + "You have left the discord server, account automatically unlinked from discord");
+
+                            if (plugin.getPluginConfig().isLinkRequired()) {
+                                plugin.getFrozenPlayers().add(e.getPlayer().getUniqueId());
+                                e.getPlayer().setGameMode(GameMode.SPECTATOR);
+                                e.getPlayer().sendMessage(ChatColor.RED + "Please relink your account with " + ChatColor.YELLOW + "/link <your discord tag>");
+                            }
+
+                            return;
+                        }
+
+                        e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
+                                plugin.getPluginConfig().getKickNotInGuild().replaceAll("%tag%", user.getAsTag())));
+                    }
+            ));
         }, ignored -> {
             // Do not delete the user from database so they stay banned if they get ToS banned or deactivate account
             e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
