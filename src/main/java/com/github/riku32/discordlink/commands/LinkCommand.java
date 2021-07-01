@@ -17,7 +17,6 @@ import org.bukkit.entity.Player;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -75,7 +74,7 @@ public class LinkCommand extends BaseCommand {
                     .setTitle("Minecraft Link")
                     .setThumbnail("attachment://head.png")
                     .setDescription("Minecraft to Discord link initiated. Press verify to complete the account link process. If you do not want to link accounts or this was not you, press cancel." +
-                            "\n\n⚠ **THIS CANNOT BE UNDONE**")
+                            (!plugin.getPluginConfig().isAllowUnlink() ? "\n\n⚠ **THIS CANNOT BE UNDONE**" : ""))
                     .addField("Username", player.getName(), true)
                     .addField("UUID", player.getUniqueId().toString(), true)
                     .build())
