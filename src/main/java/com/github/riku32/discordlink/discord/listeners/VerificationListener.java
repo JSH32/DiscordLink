@@ -90,29 +90,31 @@ public class VerificationListener extends ListenerAdapter {
 
                         plugin.getFrozenPlayers().remove(player.getUniqueId());
 
-                        if (plugin.getPluginConfig().isStatusEnabled()) {
-                            Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                                    plugin.getPluginConfig().getStatusJoin()
-                                            .replaceAll("%color%", Util.colorToChatString(
-                                                    member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
-                                            .replaceAll("%username%", offlinePlayer.getPlayer().getName())
-                                            .replaceAll("%tag%", e.getUser().getAsTag())));
-                        }
+                        if (plugin.getPluginConfig().isLinkRequired()) {
+                            if (plugin.getPluginConfig().isStatusEnabled()) {
+                                Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+                                        plugin.getPluginConfig().getStatusJoinLinked()
+                                                .replaceAll("%color%", Util.colorToChatString(
+                                                        member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
+                                                .replaceAll("%username%", offlinePlayer.getPlayer().getName())
+                                                .replaceAll("%tag%", e.getUser().getAsTag())));
+                            }
 
-                        if (plugin.getPluginConfig().isCrossChatEnabled()) {
-                            if (plugin.getBot().getChannel() != null)
-                                plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
-                                        .setColor(Constants.Colors.SUCCESS)
-                                        .setAuthor(String.format("%s (%s) has joined", e.getUser().getName(), Bukkit.getOfflinePlayer(playerInfo.getUuid()).getName()),
-                                                null, e.getUser().getAvatarUrl())
-                                        .build())
-                                        .queue();
-                        }
+                            if (plugin.getPluginConfig().isCrossChatEnabled()) {
+                                if (plugin.getBot().getChannel() != null)
+                                    plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+                                            .setColor(Constants.Colors.SUCCESS)
+                                            .setAuthor(String.format("%s (%s) has joined", offlinePlayer.getName(), e.getUser().getName()),
+                                                    null, e.getUser().getAvatarUrl())
+                                            .build())
+                                            .queue();
+                            }
 
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.teleport(player.getWorld().getSpawnLocation());
-                            player.setGameMode(plugin.getServer().getDefaultGameMode());
-                        });
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                player.teleport(player.getWorld().getSpawnLocation());
+                                player.setGameMode(plugin.getServer().getDefaultGameMode());
+                            });
+                        }
                     }
 
                     break;

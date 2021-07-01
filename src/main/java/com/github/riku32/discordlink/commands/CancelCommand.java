@@ -27,32 +27,24 @@ public class CancelCommand extends BaseCommand {
     private DiscordLink plugin;
 
     @Default
-    private void unlink(Player player) throws SQLException {
+    private void cancel(Player player) throws SQLException {
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(player.getUniqueId());
-        if (!playerInfoOptional.isPresent()) {
+        if (!playerInfoOptional.isPresent() || playerInfoOptional.get().isVerified()) {
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&cYou are not in the process of linking to a discord account"));
+                    "&cYour account is not currently linking to a discord account"));
             return;
         }
 
         PlayerInfo playerInfo = playerInfoOptional.get();
-        if (playerInfo.isVerified()) {
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    "&cYou can't cancel once you have verified your account"));
-            return;
-        }
 
         String messageID = plugin.getDatabase().getMessageId(playerInfo.getDiscordID());
         if (messageID != null) {
-            plugin.getBot().getJda().openPrivateChannelById(playerInfo.getDiscordID()).queue(channel -> {
-                channel.retrieveMessageById(messageID).queue(message -> {
-                    message.editMessage(new MessageBuilder()
+            plugin.getBot().getJda().openPrivateChannelById(playerInfo.getDiscordID())
+                    .queue(channel -> channel.retrieveMessageById(messageID).queue(message -> message.editMessage(new MessageBuilder()
                             .setContent(" ")
                             .setActionRows(ActionRow.of(message.getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())))
                             .build())
-                            .queue();
-                });
-            });
+                            .queue()));
         }
 
         plugin.getDatabase().deletePlayer(player.getUniqueId());
@@ -60,13 +52,13 @@ public class CancelCommand extends BaseCommand {
         player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                 "&7You have cancelled the linking process"));
 
-        Objects.requireNonNull(plugin.getBot().getJda().retrieveUserById(playerInfo.getDiscordID()))
-                .complete().openPrivateChannel().queue((channel) -> {
-                    channel.sendMessage(new EmbedBuilder()
-                            .setTitle("Cancelled")
-                            .setDescription(String.format("%s has cancelled the linking process", player.getName()))
-                            .setColor(Constants.Colors.FAIL)
-                            .build()).queue();
-        });
+        plugin.getBot().getGuild().retrieveMemberById(playerInfo.getDiscordID())
+                .flatMap(member -> member.getUser().openPrivateChannel())
+                .flatMap(channel -> channel.sendMessage(new EmbedBuilder()
+                        .setTitle("Cancelled")
+                        .setDescription(String.format("%s has cancelled the linking process", player.getName()))
+                        .setColor(Constants.Colors.FAIL)
+                        .build()))
+                .queue();
     }
 }

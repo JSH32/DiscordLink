@@ -5,6 +5,7 @@ import co.aikar.commands.annotation.*;
 import com.github.riku32.discordlink.Constants;
 import com.github.riku32.discordlink.DiscordLink;
 import com.github.riku32.discordlink.PlayerInfo;
+import com.github.riku32.discordlink.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -31,14 +32,19 @@ public class LinkCommand extends BaseCommand {
         Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(player.getUniqueId());
         if (playerInfoOptional.isPresent()) {
             PlayerInfo playerInfo = playerInfoOptional.get();
-            if (playerInfo.isVerified()) {
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        "&cYou can't change your linked account after you have completed the link process"));
-            } else {
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/cancel&7 or click cancel on the discord message",
-                                plugin.getBot().getJda().retrieveUserById(playerInfo.getDiscordID()).complete().getAsTag())));
-            }
+
+            plugin.getBot().getJda().retrieveUserById(playerInfo.getDiscordID()).queue(user -> {
+                if (playerInfo.isVerified()) {
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            String.format("&cYour account is already linked to &e%s. %s", user.getAsTag(),
+                                    plugin.getPluginConfig().isAllowUnlink() ? "&cIf you want to unlink your account type &e/unlink" : "")));
+                } else {
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            String.format("&7Currently in the process of linking to &e%s&7, if this is a mistake type &e/cancel&7 or click cancel on the discord message",
+                                    user.getAsTag())));
+                }
+            });
+
             return;
         }
 
@@ -63,9 +69,6 @@ public class LinkCommand extends BaseCommand {
             return;
         }
 
-        // Need to get file and send it as an attachment, visage prevents the image from being directly embedded as a header
-        InputStream file = new URL(String.format("https://visage.surgeplay.com/head/256/%s", player.getUniqueId())).openStream();
-
         Message verificationMessage = new MessageBuilder()
                 .setEmbed(new EmbedBuilder()
                     .setColor(Constants.Colors.SUCCESS)
@@ -82,9 +85,11 @@ public class LinkCommand extends BaseCommand {
                         ))
                 .build();
 
+        InputStream head = Util.getIsometricHeadStream(player.getUniqueId());
+
         member.getUser().openPrivateChannel().submit()
                 .thenCompose(privateChannel -> privateChannel.sendMessage(verificationMessage)
-                        .addFile(file, "head.png")
+                        .addFile(head, "head.png")
                         .submit())
                 .whenComplete((message, error) -> {
                     if (error != null) {

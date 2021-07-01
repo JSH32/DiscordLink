@@ -7,7 +7,6 @@ import java.util.NoSuchElementException;
 
 /**
  * {@link com.github.riku32.discordlink.DiscordLink} configuration container
- *
  */
 @Data
 public class Config {
@@ -16,8 +15,14 @@ public class Config {
     private final String ownerID;
 
     private final boolean chatEnabled;
-    private final String playerFormat;
-    private final String discordFormat;
+
+    // Player formats
+    private final String playerFormatLinked;
+    private final String playerFormatUnlinked;
+
+    // Discord user format
+    private final String discordFormatLinked;
+    private final String discordFormatUnlinked;
 
     private final boolean crossChatEnabled;
     private final String channelID;
@@ -28,9 +33,18 @@ public class Config {
     private final String kickToS;
 
     private final boolean statusEnabled;
-    private final String statusJoin;
-    private final String statusQuit;
-    private final String statusDeath;
+
+    private final String statusJoinLinked;
+    private final String statusJoinUnlinked;
+
+    private final String statusQuitLinked;
+    private final String statusQuitUnlinked;
+
+    private final String statusDeathLinked;
+    private final String statusDeathUnlinked;
+
+    private final boolean linkRequired;
+    private final boolean allowUnlink;
 
     /**
      * Create a config object from {@link com.github.riku32.discordlink.DiscordLink} instance
@@ -38,14 +52,25 @@ public class Config {
      * @throws NoSuchElementException if required values are missing
      */
     public Config(FileConfiguration configuration) throws NoSuchElementException {
+        linkRequired = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.required"));
+        allowUnlink = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.allow_unlink"));
+
         token = getAsStringNotNull(configuration, "discord.token");
         serverID = getAsStringNotNull(configuration, "discord.server_id");
         ownerID = getAsStringNotNull(configuration, "discord.owner_id");
 
         if (Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.enabled"))) {
             chatEnabled = true;
-            playerFormat = getAsStringNotNull(configuration, "chat.format.player");
-            discordFormat = getAsStringNotNull(configuration, "chat.format.discord");
+            playerFormatLinked = getAsStringNotNull(configuration, "chat.format.player.linked");
+            discordFormatLinked = getAsStringNotNull(configuration, "chat.format.discord.linked");
+
+            if (!linkRequired) {
+                playerFormatUnlinked = getAsStringNotNull(configuration, "chat.format.player.unlinked");
+                discordFormatUnlinked = getAsStringNotNull(configuration, "chat.format.discord.unlinked");
+            } else {
+                playerFormatUnlinked = null;
+                discordFormatUnlinked = null;
+            }
 
             if (Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.crosschat.enabled"))) {
                 crossChatEnabled = true;
@@ -59,22 +84,37 @@ public class Config {
         } else {
             chatEnabled = false;
             crossChatEnabled = false;
-            playerFormat = null;
-            discordFormat = null;
+            playerFormatLinked = null;
+            playerFormatUnlinked = null;
+            discordFormatLinked = null;
+            discordFormatUnlinked = null;
             channelID = null;
             webhook = null;
         }
 
         if (Boolean.parseBoolean(getAsStringNotNull(configuration, "status_messages.enabled"))) {
             statusEnabled = true;
-            statusJoin = getAsStringNotNull(configuration, "status_messages.join");
-            statusQuit = getAsStringNotNull(configuration, "status_messages.quit");
-            statusDeath = getAsStringNotNull(configuration, "status_messages.death");
+            statusJoinLinked = getAsStringNotNull(configuration, "status_messages.join.linked");
+            statusQuitLinked = getAsStringNotNull(configuration, "status_messages.quit.linked");
+            statusDeathLinked = getAsStringNotNull(configuration, "status_messages.death.linked");
+
+            if (!linkRequired) {
+                statusJoinUnlinked = getAsStringNotNull(configuration, "status_messages.join.unlinked");
+                statusQuitUnlinked = getAsStringNotNull(configuration, "status_messages.quit.unlinked");
+                statusDeathUnlinked = getAsStringNotNull(configuration, "status_messages.death.unlinked");
+            } else {
+                statusJoinUnlinked = null;
+                statusQuitUnlinked = null;
+                statusDeathUnlinked = null;
+            }
         } else {
             statusEnabled = false;
-            statusJoin = null;
-            statusQuit = null;
-            statusDeath = null;
+            statusJoinLinked = null;
+            statusQuitLinked = null;
+            statusDeathLinked = null;
+            statusJoinUnlinked = null;
+            statusQuitUnlinked = null;
+            statusDeathUnlinked = null;
         }
 
         // Kick messages, cant be empty

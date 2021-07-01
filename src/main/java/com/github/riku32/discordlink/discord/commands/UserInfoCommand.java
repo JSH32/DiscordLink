@@ -7,6 +7,7 @@ import com.freya02.botcommands.slash.annotations.Option;
 import com.github.riku32.discordlink.Constants;
 import com.github.riku32.discordlink.DiscordLink;
 import com.github.riku32.discordlink.PlayerInfo;
+import com.github.riku32.discordlink.Util;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.User;
@@ -49,7 +50,6 @@ public class UserInfoCommand extends SlashCommand {
 
         PlayerInfo playerInfo = playerInfoOptional.get();
         OfflinePlayer bukkitPlayer = Bukkit.getOfflinePlayer(playerInfo.getUuid());
-        InputStream file = new URL(String.format("https://visage.surgeplay.com/head/256/%s", playerInfo.getUuid())).openStream();
 
         String lastPlayed;
         if (bukkitPlayer.isOnline())
@@ -69,7 +69,7 @@ public class UserInfoCommand extends SlashCommand {
                         .addField("UUID", playerInfo.getUuid().toString(), false)
                         .build())
                 .build())
-                .addFile(file, "head.png")
+                .addFile(Util.getIsometricHeadStream(bukkitPlayer.getUniqueId()), "head.png")
                 .queue();
     }
 

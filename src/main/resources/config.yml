@@ -3,16 +3,30 @@ discord:
   server_id:
   owner_id:
 
+link:
+  # Requires link to play on the server
+  required: false
+
+  # Allow unlinking your minecraft account from discord
+  allow_unlink: true
+
 # Should chat be controlled by this plugin
 chat:
   enabled: true
 
   # This format will only show in game depending on where the message came from
+  # Unlinked format only required if link.required is set to false
+  # tag and color variables are only valid in linked messages
   format:
-    player: '&7[&x&9&f&e&4&6&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+    # Message formats for users
+    player:
+      linked: '&7[&x&9&f&e&4&6&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+      unlinked: '&7[&x&9&f&e&4&6&2✎&7] &7%username% » &r%message%'
 
     # This will never show if crosschat is disabled
-    discord: '&7[&x&6&e&7&9&f&3✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+    discord:
+      linked: '&7[&x&6&e&7&9&f&3✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
+      unlinked: '&7[&x&6&e&7&9&f&3✎&7] %color%%tag%&7 » &r%message%'
 
   # This will allow minecraft and discord chats/events to communicate with each other in a single channel
   crosschat:
@@ -27,11 +41,21 @@ chat:
 
 # Hijack and control player status messages
 # If enabled these message wont be sent until the user has linked their account
+# Unlinked format only required if link.required is set to false
+# tag and color variables are only valid in linked messages
 status_messages:
-  enabled: false
-  join: '%color%%username% &7(&o%tag%&7) joined the game'
-  quit: '%color%%username% &7(&o%tag%&7) left the game'
-  death: '%color%%username% &7(&o%tag%&7) %cause%'
+  enabled: true
+  join:
+    linked: '%color%%username% &7(&o%tag%&7) joined the game'
+    unlinked: '&7%username% joined the game'
+
+  quit:
+    linked: '%color%%username% &7(&o%tag%&7) left the game'
+    unlinked: '&7%username% left the game'
+
+  death:
+    linked: '%color%%username% &7(&o%tag%&7) %cause%'
+    unlinked: '&7%username% %cause%'
 
 kick_messages:
   not_in_guild: |-

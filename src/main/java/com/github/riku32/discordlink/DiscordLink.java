@@ -4,6 +4,7 @@ import club.minnced.discord.webhook.WebhookClient;
 import co.aikar.commands.BukkitCommandManager;
 import com.github.riku32.discordlink.commands.CancelCommand;
 import com.github.riku32.discordlink.commands.LinkCommand;
+import com.github.riku32.discordlink.commands.UnlinkCommand;
 import com.github.riku32.discordlink.discord.Bot;
 import com.github.riku32.discordlink.events.PlayerActivity;
 import com.github.riku32.discordlink.events.PlayerChat;
@@ -67,6 +68,9 @@ public final class DiscordLink extends JavaPlugin {
         BukkitCommandManager manager = new BukkitCommandManager(this);
         manager.registerCommand(new LinkCommand());
         manager.registerCommand(new CancelCommand());
+
+        if (pluginConfig.isAllowUnlink())
+            manager.registerCommand(new UnlinkCommand());
 
         // Add spigot events
         PlayerActivity playerActivity = new PlayerActivity(this);
