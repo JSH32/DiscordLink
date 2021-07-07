@@ -104,7 +104,7 @@ public class VerificationListener extends ListenerAdapter {
                                 if (plugin.getBot().getChannel() != null)
                                     plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
                                             .setColor(Constants.Colors.SUCCESS)
-                                            .setAuthor(String.format("%s (%s) has joined", offlinePlayer.getName(), e.getUser().getName()),
+                                            .setAuthor(String.format("%s (%s) has joined", offlinePlayer.getName(), e.getUser().getAsTag()),
                                                     null, e.getUser().getAvatarUrl())
                                             .build())
                                             .queue();
