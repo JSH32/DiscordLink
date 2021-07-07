@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -30,18 +31,31 @@ public final class DiscordLink extends JavaPlugin {
     @Getter
     private Config pluginConfig;
 
-    // Crosschat message relay from in-game chat
+    // Cross chat message relay from in-game chat
     private WebhookClient messageRelay = null;
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
-        this.pluginConfig = new Config(super.getConfig());
+        File configFile = new File(getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            getLogger().warning("Created a new configuration file, please fill in the file");
+            saveDefaultConfig();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
+        try {
+            this.pluginConfig = new Config(super.getConfig());
+        } catch (NoSuchElementException e) {
+            getLogger().severe(e.getMessage());
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         try {
             database = new Database(getDataFolder());
         } catch (SQLException e) {
-            getLogger().severe("Unable to create database");
+            getLogger().severe("Unable to create/start the database");
             e.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -84,8 +98,8 @@ public final class DiscordLink extends JavaPlugin {
     @Override
     public void onDisable() {
         // Shut down relay executor
-        if (this.messageRelay != null) this.messageRelay.close();
+        if (messageRelay != null) messageRelay.close();
 
-        bot.shutdown();
+        if (bot != null) bot.shutdown();
     }
 }
