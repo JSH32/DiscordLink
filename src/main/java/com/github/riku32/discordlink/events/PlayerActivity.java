@@ -51,8 +51,8 @@ public class PlayerActivity implements Listener {
                         "&7If this is the wrong account do &e/cancel &7or press the cancel button on the discord DM"));
 
                 if (plugin.getPluginConfig().isLinkRequired()) {
-                    e.getPlayer().setGameMode(GameMode.SPECTATOR);
                     plugin.getFrozenPlayers().add(e.getPlayer().getUniqueId());
+                    Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().setGameMode(GameMode.SPECTATOR));
                 }
             }, ignored -> {
                 // User is invalid/left before verification, just remove the data that was leftover
@@ -90,19 +90,22 @@ public class PlayerActivity implements Listener {
                     (banned) -> Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().kickPlayer(ChatColor.translateAlternateColorCodes('&',
                             String.valueOf(plugin.getPluginConfig().getKickBanned())))),
                     (not) -> guild.retrieveMember(user).queue(member -> {
-                        if (plugin.getPluginConfig().isStatusEnabled()) {
-                            Bukkit.getScheduler().runTask(plugin, () -> Bukkit.broadcastMessage(
-                                    ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().getStatusJoinLinked()
-                                        .replaceAll("%color%", Util.colorToChatString(
-                                                member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
-                                        .replaceAll("%username%", e.getPlayer().getName())
-                                        .replaceAll("%tag%", user.getAsTag()))));
-                        }
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            if (plugin.getPluginConfig().isStatusEnabled()) {
+                                Bukkit.broadcastMessage(
+                                        ChatColor.translateAlternateColorCodes('&', plugin.getPluginConfig().getStatusJoinLinked()
+                                                .replaceAll("%color%", Util.colorToChatString(
+                                                        member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
+                                                .replaceAll("%username%", e.getPlayer().getName())
+                                                .replaceAll("%tag%", user.getAsTag())));
+                            }
 
-                        e.getPlayer().setGameMode(plugin.getServer().getDefaultGameMode());
+                            e.getPlayer().setGameMode(plugin.getServer().getDefaultGameMode());
+                        });
+
                         plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
                                 .setColor(Constants.Colors.SUCCESS)
-                                .setAuthor(String.format("%s (%s) has joined", e.getPlayer().getName(), user.getName()),
+                                .setAuthor(String.format("%s (%s) has joined", e.getPlayer().getName(), user.getAsTag()),
                                         null, user.getAvatarUrl())
                                 .build())
                                 .queue();
@@ -119,7 +122,8 @@ public class PlayerActivity implements Listener {
 
                             if (plugin.getPluginConfig().isLinkRequired()) {
                                 plugin.getFrozenPlayers().add(e.getPlayer().getUniqueId());
-                                e.getPlayer().setGameMode(GameMode.SPECTATOR);
+
+                                Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().setGameMode(GameMode.SPECTATOR));
                                 e.getPlayer().sendMessage(ChatColor.RED + "Please relink your account with " + ChatColor.YELLOW + "/link <your discord tag>");
                             }
 
@@ -158,7 +162,7 @@ public class PlayerActivity implements Listener {
 
                 plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
                         .setColor(Constants.Colors.FAIL)
-                        .setAuthor(String.format("%s (%s) has left", e.getPlayer().getName(), member.getUser().getName()),
+                        .setAuthor(String.format("%s (%s) has left", e.getPlayer().getName(), member.getUser().getAsTag()),
                                 null, member.getUser().getAvatarUrl())
                         .build())
                         .queue();
@@ -204,7 +208,7 @@ public class PlayerActivity implements Listener {
 
                 plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
                         .setColor(Constants.Colors.FAIL)
-                        .setAuthor(String.format("%s (%s) %s", e.getEntity().getName(), member.getUser().getName(), causeWithoutName),
+                        .setAuthor(String.format("%s (%s) %s", e.getEntity().getName(), member.getUser().getAsTag(), causeWithoutName),
                                 null, member.getUser().getAvatarUrl())
                         .build())
                         .queue();
