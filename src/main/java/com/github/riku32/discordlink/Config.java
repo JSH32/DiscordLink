@@ -4,6 +4,7 @@ import lombok.Data;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * {@link com.github.riku32.discordlink.DiscordLink} configuration container
@@ -17,6 +18,7 @@ public class Config {
     private final boolean chatEnabled;
 
     // Player formats
+    private final boolean playerFormatEnabled;
     private final String playerFormatLinked;
     private final String playerFormatUnlinked;
 
@@ -61,11 +63,14 @@ public class Config {
 
         if (Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.enabled"))) {
             chatEnabled = true;
-            playerFormatLinked = getAsStringNotNull(configuration, "chat.format.player.linked");
+
+            playerFormatEnabled = Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.format.player.enabled"));
+
+            playerFormatLinked = playerFormatEnabled ? getAsStringNotNull(configuration, "chat.format.player.linked") : null;
             discordFormatLinked = getAsStringNotNull(configuration, "chat.format.discord.linked");
 
             if (!linkRequired) {
-                playerFormatUnlinked = getAsStringNotNull(configuration, "chat.format.player.unlinked");
+                playerFormatUnlinked = playerFormatEnabled ? getAsStringNotNull(configuration, "chat.format.player.unlinked") : null;
                 discordFormatUnlinked = getAsStringNotNull(configuration, "chat.format.discord.unlinked");
             } else {
                 playerFormatUnlinked = null;
@@ -84,6 +89,7 @@ public class Config {
         } else {
             chatEnabled = false;
             crossChatEnabled = false;
+            playerFormatEnabled = false;
             playerFormatLinked = null;
             playerFormatUnlinked = null;
             discordFormatLinked = null;

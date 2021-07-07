@@ -27,11 +27,15 @@ chat:
   format:
     # Message formats for player messages
     player:
+      # Should chat format should be applied on regular messages?
+      enabled: true
+
       linked: '&7[&2✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
       unlinked: '&7[&2✎&7] &7%username% » &r%message%'
 
     # Message formats for discord messages
-    # This will never show if crosschat is disabled
+    # This will never show if CrossChat is disabled
+    # This does not have an enabled field as there is nothing else to process chat messages from discord
     discord:
       linked: '&7[&9✎&7] %color%%username% &7(&o%tag%&7) » &r%message%'
       unlinked: '&7[&9✎&7] %color%%tag%&7 » &r%message%'
@@ -54,7 +58,6 @@ chat:
 #
 # Variables:
 #   %username% - Minecraft username
-#   %message% - Message contents
 #
 # Linked Only Variables:
 #   %color% - Top role color
@@ -69,6 +72,8 @@ status_messages:
     linked: '%color%%username% &7(&o%tag%&7) left the game'
     unlinked: '&7%username% left the game'
 
+  # Variables:
+  #   %cause% - Cause of death in game
   death:
     linked: '%color%%username% &7(&o%tag%&7) %cause%'
     unlinked: '&7%username% %cause%'
