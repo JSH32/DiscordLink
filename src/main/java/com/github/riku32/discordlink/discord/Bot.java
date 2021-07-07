@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.discord;
 
 import com.freya02.botcommands.CommandsBuilder;
+import com.freya02.botcommands.buttons.ButtonListener;
 import com.github.riku32.discordlink.discord.listeners.CrosschatListener;
 import com.github.riku32.discordlink.discord.listeners.VerificationListener;
 import com.github.riku32.discordlink.DiscordLink;
