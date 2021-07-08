@@ -86,14 +86,15 @@ public class Bot {
         try {
             commandsBuilder.build(jda, "com.github.riku32.discordlink.discord.commands");
 
-            // Delete botcommands framework listener
-            
-            // TODO: Remove button listener without error
-            // jda.getEventManager().getRegisteredListeners().removeIf(listener -> listener instanceof ButtonListener);
         } catch (IOException exception) {
             plugin.getLogger().severe("Unable to register/update slash commands");
             exception.printStackTrace();
         }
+        
+        // Delete botcommands framework listener
+        for (Object listener : jda.getRegisteredListeners())
+            if (listener instanceof ButtonListener)
+                jda.removeEventListener(listener);
     }
 
     public void shutdown() {
