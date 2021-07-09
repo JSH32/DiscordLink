@@ -7,6 +7,9 @@ link:
   # Requires link to play on the server
   required: false
 
+# Should the player respawn at the world spawn after verification. This setting will only be used if link.required is true
+  verify_spawn: false
+
   # Allow unlinking your minecraft account from discord
   allow_unlink: true
 

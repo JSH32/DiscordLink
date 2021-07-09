@@ -111,7 +111,9 @@ public class VerificationListener extends ListenerAdapter {
                             }
 
                             Bukkit.getScheduler().runTask(plugin, () -> {
+                                if (plugin.getPluginConfig().isVerifySpawn()) {
                                 player.teleport(player.getWorld().getSpawnLocation());
+                                }
                                 player.setGameMode(plugin.getServer().getDefaultGameMode());
                             });
                         }

@@ -46,6 +46,7 @@ public class Config {
     private final String statusDeathUnlinked;
 
     private final boolean linkRequired;
+    private final boolean verifySpawn;
     private final boolean allowUnlink;
 
     /**
@@ -55,6 +56,11 @@ public class Config {
      */
     public Config(FileConfiguration configuration) throws NoSuchElementException {
         linkRequired = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.required"));
+        if (linkRequired) {
+            verifySpawn = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.verify_spawn"));
+        } else {
+            verifySpawn = false;
+        }
         allowUnlink = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.allow_unlink"));
 
         token = getAsStringNotNull(configuration, "discord.token");
