@@ -13,7 +13,7 @@
 
     <description>Discord companion for your Minecraft server</description>
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>1.11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <url>https://github.com/Riku32/DiscordLink</url>
