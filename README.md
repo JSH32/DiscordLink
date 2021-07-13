@@ -8,6 +8,10 @@ A discord to Minecraft interface. Designed primarily for SMP servers. This plugi
 - Cross chat
 - Ban control/sync
 
+### Requirements
+- Spigot 1.16 (minimum)
+- Java 1.11 (minimum)
+
 ### Install
 - Install the plugin to the server and restart
 - A configuration file should be created
@@ -18,7 +22,7 @@ A discord to Minecraft interface. Designed primarily for SMP servers. This plugi
 - Go to your application and click the bot section
 - Click "Add Bot"
 - Click "Copy" under the token section, paste this value at "discord.token" in the config.yml
-- Scroll down to "Privileged Gateway Intents" and click enable on "Server members intent"
+- Scroll down to "Privileged Gateway Intents" and click enable on "Guild members intent"
 - Go to OAuth2 tab and checkmark "bot" and "application.commands" under Scopes
 - Copy the link at the bottom and open it in a new tab
 - Invite it to your server/guild
