@@ -4,7 +4,6 @@ import lombok.Data;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 /**
  * {@link com.github.riku32.discordlink.DiscordLink} configuration container
@@ -29,6 +28,10 @@ public class Config {
     private final boolean crossChatEnabled;
     private final String channelID;
     private final String webhook;
+
+    private final boolean channelBroadcastDeath;
+    private final boolean channelBroadcastJoin;
+    private final boolean channelBroadcastQuit;
 
     private final String kickNotInGuild;
     private final String kickBanned;
@@ -87,10 +90,17 @@ public class Config {
                 crossChatEnabled = true;
                 channelID = getAsStringNotNull(configuration, "chat.crosschat.channel_id");
                 webhook = getAsStringNotNull(configuration, "chat.crosschat.webhook");
+
+                channelBroadcastDeath = Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.crosschat.events.death"));
+                channelBroadcastJoin = Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.crosschat.events.join"));
+                channelBroadcastQuit = Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.crosschat.events.quit"));
             } else {
                 crossChatEnabled = false;
                 channelID = null;
                 webhook = null;
+                channelBroadcastDeath = false;
+                channelBroadcastJoin = false;
+                channelBroadcastQuit = false;
             }
         } else {
             chatEnabled = false;
@@ -102,6 +112,9 @@ public class Config {
             discordFormatUnlinked = null;
             channelID = null;
             webhook = null;
+            channelBroadcastDeath = false;
+            channelBroadcastJoin = false;
+            channelBroadcastQuit = false;
         }
 
         if (Boolean.parseBoolean(getAsStringNotNull(configuration, "status_messages.enabled"))) {
