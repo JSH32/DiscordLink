@@ -11,6 +11,7 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import lombok.Getter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -91,10 +92,14 @@ public class Bot {
             exception.printStackTrace();
         }
         
-        // Delete botcommands framework listener
+        // Delete bot commands framework listener
         for (Object listener : jda.getRegisteredListeners())
             if (listener instanceof ButtonListener)
                 jda.removeEventListener(listener);
+    }
+
+    public void setPlayerCountStatus(int playerCount) {
+        jda.getPresence().setActivity(Activity.watching(String.format("%d people play minecraft", playerCount)));
     }
 
     public void shutdown() {
