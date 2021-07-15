@@ -6,9 +6,7 @@ import com.github.riku32.discordlink.commands.CancelCommand;
 import com.github.riku32.discordlink.commands.LinkCommand;
 import com.github.riku32.discordlink.commands.UnlinkCommand;
 import com.github.riku32.discordlink.discord.Bot;
-import com.github.riku32.discordlink.events.PlayerActivity;
-import com.github.riku32.discordlink.events.PlayerChat;
-import com.github.riku32.discordlink.events.PlayerMove;
+import com.github.riku32.discordlink.events.*;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -90,10 +88,9 @@ public final class DiscordLink extends JavaPlugin {
             manager.registerCommand(new UnlinkCommand());
 
         // Add spigot events
-        PlayerActivity playerActivity = new PlayerActivity(this);
-        playerActivity.setPlayerCount(0); // Set initial status
-
-        getServer().getPluginManager().registerEvents(playerActivity, this);
+        getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerQuit(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerDeath(this), this);
         getServer().getPluginManager().registerEvents(new PlayerMove(this), this);
         getServer().getPluginManager().registerEvents(new PlayerChat(this, this.messageRelay), this);
     }
