@@ -75,6 +75,9 @@ public final class DiscordLink extends JavaPlugin {
             return;
         }
 
+        // Set initial player count status
+        bot.setPlayerCountStatus(0);
+
         // Set in-game message relay
         this.messageRelay = pluginConfig.getWebhook() == null ? null : WebhookClient.withUrl(pluginConfig.getWebhook());
 
