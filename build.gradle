@@ -1,0 +1,31 @@
+buildscript {
+    repositories {
+        maven { url 'https://plugins.gradle.org/m2' }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    group = 'com.github.riku32.discordlink'
+    version = '1.2'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/groups/public' }
+        maven { url 'https://m2.dv8tion.net/releases' }
+        maven { url 'https://jitpack.io' }
+    }
+
+    dependencies {
+        compileOnly 'org.projectlombok:lombok:1.18.20'
+        annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(11)
+        }
+    }
+}

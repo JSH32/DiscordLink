@@ -1,0 +1,37 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+
+repositories {
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+    maven { url = "https://repo.aikar.co/content/groups/aikar" }
+}
+
+dependencies {
+    implementation project(':core')
+
+    compileOnly 'org.spigotmc:spigot-api:1.16.1-R0.1-SNAPSHOT'
+    compileOnly 'net.dv8tion:JDA:4.3.0_277'
+    compileOnly 'com.github.freya022:BotCommands:7dccb0d'
+    compileOnly 'club.minnced:discord-webhooks:0.5.7'
+
+    compileOnly 'co.aikar:acf-bukkit:0.5.0-SNAPSHOT'
+    implementation 'co.aikar:acf-bukkit:0.5.0-SNAPSHOT'
+}
+
+shadowJar {
+    relocate 'co.aikar.commands', 'com.github.riku32.discordlink.lib.acf'
+    relocate 'co.aikar.locales', 'com.github.riku32.discordlink.lib.locales'
+}
+
+build.dependsOn shadowJar

@@ -1,8 +1,0 @@
-name: DiscordLink
-version: ${project.version}
-main: com.github.riku32.discordlink.DiscordLink
-api-version: 1.16
-load: STARTUP
-authors: [ Riku32 ]
-description: Discord link plugin for Yume discord
-website: https://github.com/Riku32
