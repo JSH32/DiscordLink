@@ -1,13 +1,13 @@
-package com.github.riku32.discordlink.spigot;
+package com.github.riku32.discordlink.core;
 
 import lombok.Data;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.simpleyaml.configuration.file.YamlFile;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
-/**
- * {@link DiscordLink} configuration container
- */
 @Data
 public class Config {
     private final String token;
@@ -53,11 +53,16 @@ public class Config {
     private final boolean allowUnlink;
 
     /**
-     * Create a config object from {@link DiscordLink} instance
-     * @param configuration object
-     * @throws NoSuchElementException if required values are missing
+     * Parse config file and turn into object
+     *
+     * @param configContent string containing a valid yml config
+     * @throws NoSuchElementException if required values are missing or malformed
      */
-    public Config(FileConfiguration configuration) throws NoSuchElementException {
+    public Config(String configContent) throws NoSuchElementException, IOException {
+        InputStream stream = new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8));
+        YamlFile configuration = YamlFile.loadConfiguration(stream);
+        stream.close();
+
         linkRequired = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.required"));
         if (linkRequired) {
             verifySpawn = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.verify_spawn"));
@@ -149,7 +154,7 @@ public class Config {
         kickToS = getAsStringNotNull(configuration, "kick_messages.tos");
     }
 
-    private String getAsStringNotNull(FileConfiguration config, String path) throws NoSuchElementException {
+    private String getAsStringNotNull(YamlFile config, String path) throws NoSuchElementException {
         Object value = config.get(path);
         if (value == null)
             throw new NoSuchElementException(path + " was not found in the config");
