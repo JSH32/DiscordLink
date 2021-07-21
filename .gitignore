@@ -117,3 +117,5 @@ buildNumber.properties
 run/
 
 .gradle
+
+*build
