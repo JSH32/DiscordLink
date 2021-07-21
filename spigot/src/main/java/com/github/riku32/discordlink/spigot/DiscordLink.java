@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.spigot;
 
 import club.minnced.discord.webhook.WebhookClient;
 import co.aikar.commands.BukkitCommandManager;
+import com.github.riku32.discordlink.core.Config;
 import com.github.riku32.discordlink.spigot.commands.CancelCommand;
 import com.github.riku32.discordlink.core.database.Database;
 import com.github.riku32.discordlink.spigot.discord.Bot;
@@ -14,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -44,8 +46,8 @@ public final class DiscordLink extends JavaPlugin {
         }
 
         try {
-            this.pluginConfig = new Config(super.getConfig());
-        } catch (NoSuchElementException e) {
+            this.pluginConfig = new Config(getConfig().saveToString());
+        } catch (NoSuchElementException | IOException e) {
             getLogger().severe(e.getMessage());
             Bukkit.getPluginManager().disablePlugin(this);
             return;
