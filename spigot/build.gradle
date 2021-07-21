@@ -30,8 +30,12 @@ dependencies {
 }
 
 shadowJar {
+    archiveBaseName.set("discordlink-spigot")
+
     relocate 'co.aikar.commands', 'com.github.riku32.discordlink.lib.acf'
     relocate 'co.aikar.locales', 'com.github.riku32.discordlink.lib.locales'
 }
 
-build.dependsOn shadowJar
+artifacts {
+    archives shadowJar
+}
