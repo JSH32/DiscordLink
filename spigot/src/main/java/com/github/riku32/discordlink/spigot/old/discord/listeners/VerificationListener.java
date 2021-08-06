@@ -1,9 +1,9 @@
-package com.github.riku32.discordlink.spigot.discord.listeners;
+package com.github.riku32.discordlink.spigot.old.discord.listeners;
 
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
@@ -22,9 +22,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class VerificationListener extends ListenerAdapter {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
-    public VerificationListener(DiscordLink plugin) {
+    public VerificationListener(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
     }
 

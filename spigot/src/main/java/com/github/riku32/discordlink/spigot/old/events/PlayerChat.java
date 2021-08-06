@@ -1,11 +1,11 @@
-package com.github.riku32.discordlink.spigot.events;
+package com.github.riku32.discordlink.spigot.old.events;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import net.dv8tion.jda.api.entities.Member;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.event.EventHandler;
@@ -16,7 +16,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class PlayerChat implements Listener {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
     private final WebhookClient messageRelay;
 
@@ -26,7 +26,7 @@ public class PlayerChat implements Listener {
      * @param plugin DiscordLink plugin instance
      * @param messageRelay webhook to send in-game messages to, if {@code null} messages will not be relayed
      */
-    public PlayerChat(DiscordLink plugin, WebhookClient messageRelay) {
+    public PlayerChat(DiscordLinkSpigot plugin, WebhookClient messageRelay) {
         this.plugin = plugin;
         this.messageRelay = messageRelay;
     }

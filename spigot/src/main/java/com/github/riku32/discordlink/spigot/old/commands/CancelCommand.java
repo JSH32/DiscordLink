@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.spigot.commands;
+package com.github.riku32.discordlink.spigot.old.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -7,7 +7,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Description("Cancel the discord linking process")
 public class CancelCommand extends BaseCommand {
     @Dependency
-    private DiscordLink plugin;
+    private DiscordLinkSpigot plugin;
 
     @Default
     private void cancel(Player player) throws SQLException {

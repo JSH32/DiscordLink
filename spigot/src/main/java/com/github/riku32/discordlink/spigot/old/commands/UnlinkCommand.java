@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.spigot.commands;
+package com.github.riku32.discordlink.spigot.old.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.CommandAlias;
@@ -7,7 +7,7 @@ import co.aikar.commands.annotation.Dependency;
 import co.aikar.commands.annotation.Description;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @Description("Unlink your minecraft account with your discord account")
 public class UnlinkCommand extends BaseCommand {
     @Dependency
-    private DiscordLink plugin;
+    private DiscordLinkSpigot plugin;
 
     @Default
     private void unlink(Player player) throws SQLException {

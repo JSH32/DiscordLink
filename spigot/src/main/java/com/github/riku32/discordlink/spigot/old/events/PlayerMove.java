@@ -1,14 +1,14 @@
-package com.github.riku32.discordlink.spigot.events;
+package com.github.riku32.discordlink.spigot.old.events;
 
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerMove implements Listener {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
-    public PlayerMove(DiscordLink plugin) {
+    public PlayerMove(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
     }
 

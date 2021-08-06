@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.spigot.discord.commands;
+package com.github.riku32.discordlink.spigot.old.discord.commands;
 
 import com.freya02.botcommands.slash.GuildSlashEvent;
 import com.freya02.botcommands.slash.SlashCommand;
@@ -7,7 +7,7 @@ import com.freya02.botcommands.slash.annotations.Option;
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.User;
@@ -22,9 +22,9 @@ import java.util.Date;
 import java.util.Optional;
 
 public class UserInfoCommand extends SlashCommand {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
-    public UserInfoCommand(DiscordLink plugin) {
+    public UserInfoCommand(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
     }
 

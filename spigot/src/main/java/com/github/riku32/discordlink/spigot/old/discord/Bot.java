@@ -1,10 +1,10 @@
-package com.github.riku32.discordlink.spigot.discord;
+package com.github.riku32.discordlink.spigot.old.discord;
 
 import com.freya02.botcommands.CommandsBuilder;
 import com.freya02.botcommands.buttons.ButtonListener;
-import com.github.riku32.discordlink.spigot.DiscordLink;
-import com.github.riku32.discordlink.spigot.discord.listeners.CrosschatListener;
-import com.github.riku32.discordlink.spigot.discord.listeners.VerificationListener;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
+import com.github.riku32.discordlink.spigot.old.discord.listeners.CrosschatListener;
+import com.github.riku32.discordlink.spigot.old.discord.listeners.VerificationListener;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.neovisionaries.ws.client.DualStackMode;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -35,7 +35,7 @@ public class Bot {
 
     private final ExecutorService callbackThreadPool;
 
-    public Bot(DiscordLink plugin, String token, String guildID, String ownerID, String channelID) throws LoginException, InterruptedException {
+    public Bot(DiscordLinkSpigot plugin, String token, String guildID, String ownerID, String channelID) throws LoginException, InterruptedException {
         callbackThreadPool = new ForkJoinPool(Runtime.getRuntime().availableProcessors(), pool -> {
             final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
             worker.setName("DiscordLink - JDA Callback " + worker.getPoolIndex());
@@ -79,13 +79,13 @@ public class Bot {
         // Prefix option is ignored since we use slash commands
         CommandsBuilder commandsBuilder = CommandsBuilder.withPrefix("!", Long.parseLong(ownerID))
                 .setPermissionProvider(new PermissionManager(this.guild))
-                .registerConstructorParameter(DiscordLink.class, ignored -> plugin)
+                .registerConstructorParameter(DiscordLinkSpigot.class, ignored -> plugin)
                 // Disable both help commands, we only use a few slash commands so its self explanatory
                 .disableSlashHelpCommand()
                 .disableHelpCommand(event -> {});
 
         try {
-            commandsBuilder.build(jda, "com.github.riku32.discordlink.spigot.discord.commands");
+            commandsBuilder.build(jda, "com.github.riku32.discordlink.spigot.old.discord.commands");
 
         } catch (IOException exception) {
             plugin.getLogger().severe("Unable to register/update slash commands");

@@ -1,9 +1,9 @@
-package com.github.riku32.discordlink.spigot.events;
+package com.github.riku32.discordlink.spigot.old.events;
 
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.md_5.bungee.api.ChatColor;
@@ -17,9 +17,9 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class PlayerJoin implements Listener {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
-    public PlayerJoin(DiscordLink plugin) {
+    public PlayerJoin(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
     }
 
