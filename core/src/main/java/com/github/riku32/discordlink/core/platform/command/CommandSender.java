@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.core.commands;
+package com.github.riku32.discordlink.core.platform.command;
 
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
@@ -62,7 +62,7 @@ public class CommandSender {
      */
     public void sendMessage(String message) {
         if (isConsole())
-            plugin.log(message);
+            plugin.getLogger().info(message);
         else
             player.sendMessage(message);
     }
