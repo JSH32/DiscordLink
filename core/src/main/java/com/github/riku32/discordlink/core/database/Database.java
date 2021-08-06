@@ -20,6 +20,12 @@ public class Database {
         statement.close();
     }
 
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException ignored) {}
+    }
+
     public Optional<PlayerInfo> getPlayerInfo(UUID uuid) throws SQLException {
         PreparedStatement statement = connection.prepareStatement("SELECT discord_id, verified, uuid FROM users WHERE uuid = ?");
         statement.setString(1, uuid.toString());
