@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.spigot.discord;
+package com.github.riku32.discordlink.spigot.old.discord;
 
 import com.freya02.botcommands.CommandList;
 import com.freya02.botcommands.PermissionProvider;

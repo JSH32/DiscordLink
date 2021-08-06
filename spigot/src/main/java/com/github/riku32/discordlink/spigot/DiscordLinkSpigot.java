@@ -3,23 +3,28 @@ package com.github.riku32.discordlink.spigot;
 import club.minnced.discord.webhook.WebhookClient;
 import co.aikar.commands.BukkitCommandManager;
 import com.github.riku32.discordlink.core.Config;
-import com.github.riku32.discordlink.spigot.commands.CancelCommand;
+import com.github.riku32.discordlink.core.eventbus.EventBus;
+import com.github.riku32.discordlink.core.platform.PlatformPlugin;
+import com.github.riku32.discordlink.core.platform.PlatformPlayer;
+import com.github.riku32.discordlink.spigot.old.commands.CancelCommand;
 import com.github.riku32.discordlink.core.database.Database;
-import com.github.riku32.discordlink.spigot.discord.Bot;
-import com.github.riku32.discordlink.spigot.events.*;
-import com.github.riku32.discordlink.spigot.commands.LinkCommand;
-import com.github.riku32.discordlink.spigot.commands.UnlinkCommand;
+import com.github.riku32.discordlink.spigot.old.discord.Bot;
+import com.github.riku32.discordlink.spigot.old.events.*;
+import com.github.riku32.discordlink.spigot.old.commands.LinkCommand;
+import com.github.riku32.discordlink.spigot.old.commands.UnlinkCommand;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
 
-public final class DiscordLink extends JavaPlugin {
+public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugin {
     @Getter
     private Bot bot;
 
@@ -35,8 +40,12 @@ public final class DiscordLink extends JavaPlugin {
     // Cross chat message relay from in-game chat
     private WebhookClient messageRelay = null;
 
+    private EventBus eventBus;
+
     @Override
     public void onEnable() {
+        this.eventBus = new EventBus(getLogger());
+
         File configFile = new File(getDataFolder(), "config.yml");
         if (!configFile.exists()) {
             getLogger().warning("Created a new configuration file, please fill in the file");
@@ -104,5 +113,35 @@ public final class DiscordLink extends JavaPlugin {
         if (messageRelay != null) messageRelay.close();
 
         if (bot != null) bot.shutdown();
+    }
+
+    @Override
+    public PlatformPlayer getPlayer(UUID uuid) {
+        return new SpigotPlayer(this.getServer().getPlayer(uuid));
+    }
+
+    @Override
+    public PlatformPlayer getPlayer(String username) {
+        return new SpigotPlayer(this.getServer().getPlayer(username));
+    }
+
+    @Override
+    public @NotNull Logger getLogger() {
+        return super.getLogger();
+    }
+
+    @Override
+    public File getDataDirectory() {
+        return getDataFolder();
+    }
+
+    @Override
+    public void disable() {
+        Bukkit.getPluginManager().disablePlugin(this);
+    }
+
+    @Override
+    public EventBus getEventBus() {
+        return eventBus;
     }
 }

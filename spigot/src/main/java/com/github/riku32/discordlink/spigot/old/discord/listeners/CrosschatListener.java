@@ -1,9 +1,9 @@
-package com.github.riku32.discordlink.spigot.discord.listeners;
+package com.github.riku32.discordlink.spigot.old.discord.listeners;
 
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
 import lombok.SneakyThrows;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -19,9 +19,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class CrosschatListener extends ListenerAdapter {
-    private final DiscordLink plugin;
+    private final DiscordLinkSpigot plugin;
 
-    public CrosschatListener(DiscordLink plugin) {
+    public CrosschatListener(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
     }
 

@@ -1,11 +1,11 @@
-package com.github.riku32.discordlink.spigot.commands;
+package com.github.riku32.discordlink.spigot.old.commands;
 
 import co.aikar.commands.BaseCommand;
 import co.aikar.commands.annotation.*;
+import com.github.riku32.discordlink.spigot.DiscordLinkSpigot;
 import com.github.riku32.discordlink.spigot.Util;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.spigot.Constants;
-import com.github.riku32.discordlink.spigot.DiscordLink;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Member;
@@ -24,7 +24,7 @@ import java.util.Optional;
 @Description("Link your account to your discord")
 public class LinkCommand extends BaseCommand {
     @Dependency
-    private DiscordLink plugin;
+    private DiscordLinkSpigot plugin;
 
     @Default
     private void link(Player player, String tag) throws SQLException, IOException {
