@@ -1,6 +1,10 @@
 package com.github.riku32.discordlink.core.platform;
 
+import com.github.riku32.discordlink.core.eventbus.EventBus;
+
+import java.io.File;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 /**
  * Platform agnostic plugin implementation
@@ -23,9 +27,24 @@ public interface PlatformPlugin {
     PlatformPlayer getPlayer(String username);
 
     /**
-     * Log a message to the console
-     *
-     * @param message to log
+     * Get the logger
      */
-    void log(String message);
+    Logger getLogger();
+
+    /**
+     * Get data directory
+     */
+    File getDataDirectory();
+
+    /**
+     * Disable the plugin
+     */
+    void disable();
+
+    /**
+     * Get the EventBus for events
+     *
+     * @return eventbus
+     */
+    EventBus getEventBus();
 }

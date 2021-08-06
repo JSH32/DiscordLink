@@ -26,4 +26,11 @@ public interface PlatformPlayer {
      * @param message message to send to player
      */
     void sendMessage(String message);
+
+    /**
+     * Get the player object behind the implementation
+     *
+     * @return player
+     */
+    Object getPlatformPlayer();
 }
