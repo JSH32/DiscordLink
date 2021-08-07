@@ -32,6 +32,16 @@ public class CommandSender {
     }
 
     /**
+     * Get player from the sender
+     * This method will return null if sent by the console
+     *
+     * @return player
+     */
+    public PlatformPlayer getPlayer() {
+        return player;
+    }
+
+    /**
      * Get name of sender
      *
      * @return name

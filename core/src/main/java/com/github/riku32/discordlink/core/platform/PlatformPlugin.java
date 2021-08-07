@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.core.platform;
 
 import com.github.riku32.discordlink.core.eventbus.EventBus;
+import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
 
 import java.io.File;
 import java.util.UUID;
@@ -47,4 +48,9 @@ public interface PlatformPlugin {
      * @return eventbus
      */
     EventBus getEventBus();
+
+    /**
+     * Register a command into the platforms command registry
+     */
+    void registerCommand(CompiledCommand compiledCommand);
 }
