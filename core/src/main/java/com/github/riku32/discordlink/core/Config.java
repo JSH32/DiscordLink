@@ -2,7 +2,6 @@ package com.github.riku32.discordlink.core;
 
 import lombok.Data;
 import org.simpleyaml.configuration.file.YamlFile;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
