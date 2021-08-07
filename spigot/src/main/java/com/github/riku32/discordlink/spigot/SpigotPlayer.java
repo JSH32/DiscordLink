@@ -28,6 +28,11 @@ public class SpigotPlayer implements PlatformPlayer {
     }
 
     @Override
+    public boolean hasPermission(String node) {
+        return player.isOp() || player.hasPermission(node);
+    }
+
+    @Override
     public Object getPlatformPlayer() {
         return player;
     }

@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.spigot.events.chatevent;
+package com.github.riku32.discordlink.spigot.events.chat;
 
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
