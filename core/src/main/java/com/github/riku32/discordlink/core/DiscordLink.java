@@ -1,7 +1,12 @@
 package com.github.riku32.discordlink.core;
 
+import com.github.riku32.discordlink.core.commands.CommandTest;
 import com.github.riku32.discordlink.core.database.Database;
+import com.github.riku32.discordlink.core.eventbus.ListenerRegisterException;
+import com.github.riku32.discordlink.core.events.JoinEvent;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
+import com.github.riku32.discordlink.core.platform.command.CommandCompileException;
+import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
 import lombok.Getter;
 
 import java.io.File;
@@ -54,10 +59,25 @@ public class DiscordLink {
             disable();
             return;
         }
+
+        try {
+            plugin.getEventBus().register(new JoinEvent());
+        } catch (ListenerRegisterException e) {
+            e.printStackTrace();
+            disable();
+        }
+
+        try {
+            plugin.registerCommand(new CompiledCommand(new CommandTest()));
+        } catch (CommandCompileException e) {
+            e.printStackTrace();
+            disable();
+        }
     }
 
     public void disable() {
-        database.close();
+        if (database != null) database.close();
+
         plugin.disable();
     }
 }
