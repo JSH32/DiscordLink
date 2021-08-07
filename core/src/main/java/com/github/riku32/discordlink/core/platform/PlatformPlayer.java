@@ -28,9 +28,18 @@ public interface PlatformPlayer {
     void sendMessage(String message);
 
     /**
+     * Check if player has either a permission node or is operator
+     *
+     * @return true if either node is present or if the user is operator
+     */
+    boolean hasPermission(String node);
+
+    /**
      * Get the player object behind the implementation
      *
      * @return player
      */
     Object getPlatformPlayer();
+
+
 }
