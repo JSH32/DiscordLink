@@ -21,52 +21,52 @@ public class PlayerDeath implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    private void onPlayerDeath(PlayerDeathEvent e) throws SQLException {
-        final String causeWithoutName;
-        if (e.getDeathMessage() == null)
-            causeWithoutName = "died";
-        else
-            causeWithoutName = e.getDeathMessage().substring(e.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
-
-        if (plugin.getPluginConfig().isStatusEnabled()) e.setDeathMessage(null);
-
-        Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getEntity().getUniqueId());
-        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
-            plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
-                // Send custom death message if status is enabled, else handle normally
-                if (plugin.getPluginConfig().isStatusEnabled()) {
-                    Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
-                            plugin.getPluginConfig().getStatusDeathLinked()
-                                    .replaceAll("%color%", Util.colorToChatString(
-                                            member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
-                                    .replaceAll("%username%", e.getEntity().getDisplayName())
-                                    .replaceAll("%tag%", member.getUser().getAsTag())
-                                    .replaceAll("%cause%", causeWithoutName)));
-                }
-
-                if (plugin.getPluginConfig().isChannelBroadcastDeath())
-                    plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
-                            .setColor(Constants.Colors.FAIL)
-                            .setAuthor(String.format("%s (%s) %s", e.getEntity().getName(), member.getUser().getAsTag(), causeWithoutName),
-                                    null, member.getUser().getAvatarUrl())
-                            .build())
-                            .queue();
-            });
-        } else if (!plugin.getPluginConfig().isLinkRequired()) {
-            if (plugin.getPluginConfig().isStatusEnabled()) {
-                e.setDeathMessage(ChatColor.translateAlternateColorCodes('&',
-                        plugin.getPluginConfig().getStatusDeathUnlinked()
-                                .replaceAll("%username%", e.getEntity().getName())
-                                .replaceAll("%cause%", causeWithoutName)));
-            }
-
-            if (plugin.getPluginConfig().isChannelBroadcastDeath())
-                plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
-                        .setColor(Constants.Colors.FAIL)
-                        .setAuthor(String.format("%s %s", e.getEntity().getName(), causeWithoutName), null, Util.getHeadURL(e.getEntity().getUniqueId()))
-                        .build())
-                        .queue();
-        }
-    }
+//    @EventHandler
+//    private void onPlayerDeath(PlayerDeathEvent e) throws SQLException {
+//        final String causeWithoutName;
+//        if (e.getDeathMessage() == null)
+//            causeWithoutName = "died";
+//        else
+//            causeWithoutName = e.getDeathMessage().substring(e.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
+//
+//        if (plugin.getPluginConfig().isStatusEnabled()) e.setDeathMessage(null);
+//
+//        Optional<PlayerInfo> playerInfoOptional = plugin.getDatabase().getPlayerInfo(e.getEntity().getUniqueId());
+//        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
+//            plugin.getBot().getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
+//                // Send custom death message if status is enabled, else handle normally
+//                if (plugin.getPluginConfig().isStatusEnabled()) {
+//                    Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&',
+//                            plugin.getPluginConfig().getStatusDeathLinked()
+//                                    .replaceAll("%color%", Util.colorToChatString(
+//                                            member.getColor() != null ? member.getColor() : ChatColor.GRAY.getColor()))
+//                                    .replaceAll("%username%", e.getEntity().getDisplayName())
+//                                    .replaceAll("%tag%", member.getUser().getAsTag())
+//                                    .replaceAll("%cause%", causeWithoutName)));
+//                }
+//
+//                if (plugin.getPluginConfig().isChannelBroadcastDeath())
+//                    plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+//                            .setColor(Constants.Colors.FAIL)
+//                            .setAuthor(String.format("%s (%s) %s", e.getEntity().getName(), member.getUser().getAsTag(), causeWithoutName),
+//                                    null, member.getUser().getAvatarUrl())
+//                            .build())
+//                            .queue();
+//            });
+//        } else if (!plugin.getPluginConfig().isLinkRequired()) {
+//            if (plugin.getPluginConfig().isStatusEnabled()) {
+//                e.setDeathMessage(ChatColor.translateAlternateColorCodes('&',
+//                        plugin.getPluginConfig().getStatusDeathUnlinked()
+//                                .replaceAll("%username%", e.getEntity().getName())
+//                                .replaceAll("%cause%", causeWithoutName)));
+//            }
+//
+//            if (plugin.getPluginConfig().isChannelBroadcastDeath())
+//                plugin.getBot().getChannel().sendMessage(new EmbedBuilder()
+//                        .setColor(Constants.Colors.FAIL)
+//                        .setAuthor(String.format("%s %s", e.getEntity().getName(), causeWithoutName), null, Util.getHeadURL(e.getEntity().getUniqueId()))
+//                        .build())
+//                        .queue();
+//        }
+//    }
 }

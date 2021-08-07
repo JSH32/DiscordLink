@@ -12,8 +12,8 @@ public class PlayerMove implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    private void onPlayerMove(PlayerMoveEvent e) {
-        if (plugin.getFrozenPlayers().contains(e.getPlayer().getUniqueId())) e.setCancelled(true);
-    }
+//    @EventHandler
+//    private void onPlayerMove(PlayerMoveEvent e) {
+//        if (plugin.getFrozenPlayers().contains(e.getPlayer().getUniqueId())) e.setCancelled(true);
+//    }
 }
