@@ -28,9 +28,4 @@ subprojects {
             languageVersion = JavaLanguageVersion.of(11)
         }
     }
-
-    // Copy global configs
-    processResources {
-        from 'core/src/main/resources'
-    }
 }
