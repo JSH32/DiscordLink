@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class EventBus {
     private final Map<Class<?>, Set<InstancedMethod>> subscribers = new IdentityHashMap<>();
@@ -18,8 +19,11 @@ public class EventBus {
     }
 
     public <T extends Event> void post(T event) {
-        Set<InstancedMethod> methods = subscribers.get(event.getClass());
-        if (methods == null) return;
+        Set<InstancedMethod> methods = subscribers.keySet().stream()
+                .filter(key -> key.isAssignableFrom(event.getClass()))
+                .map(subscribers::get)
+                .flatMap(Set::stream)
+                .collect(Collectors.toUnmodifiableSet());
 
         for (InstancedMethod method : methods) {
             if (event.isCancelled()) return;
@@ -35,7 +39,7 @@ public class EventBus {
     }
 
     public void register(Object object) throws ListenerRegisterException {
-        for (Method method : object.getClass().getMethods()) {
+        for (Method method : object.getClass().getDeclaredMethods()) {
             if (!method.isAnnotationPresent(EventHandler.class)) continue;
 
             if (method.getParameterTypes().length > 1) {
@@ -53,6 +57,7 @@ public class EventBus {
                         object.getClass().getName(), method.getName()));
             }
 
+            method.setAccessible(true);
             subscribers.computeIfAbsent(method.getParameterTypes()[0], k -> new HashSet<>())
                 .add(new InstancedMethod(object, method));
         }
