@@ -30,7 +30,7 @@ public class CommandData {
         return method;
     }
 
-    public List<ArgumentData> getArgumentData() {
+    public List<ArgumentData> getArguments() {
         return argumentData;
     }
 
@@ -39,6 +39,6 @@ public class CommandData {
     }
 
     public String getPermission() {
-        return commandAnnotation.permission();
+        return commandAnnotation.permission().equals("") ? null : commandAnnotation.permission();
     }
 }

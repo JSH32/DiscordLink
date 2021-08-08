@@ -4,6 +4,7 @@ import com.github.riku32.discordlink.core.eventbus.EventBus;
 import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
 
 import java.io.File;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -26,6 +27,13 @@ public interface PlatformPlugin {
      * @return player
      */
     PlatformPlayer getPlayer(String username);
+
+    /**
+     * Get all players on the server
+     *
+     * @return player set
+     */
+    Set<PlatformPlayer> getPlayers();
 
     /**
      * Get the logger

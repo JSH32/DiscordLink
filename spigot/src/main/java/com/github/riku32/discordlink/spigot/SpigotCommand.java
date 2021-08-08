@@ -1,41 +1,71 @@
 package com.github.riku32.discordlink.spigot;
 
+import com.github.riku32.discordlink.core.locale.Locale;
+import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.core.platform.command.ArgumentData;
 import com.github.riku32.discordlink.core.platform.command.CommandData;
 import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public class SpigotCommand extends Command {
-    private final CompiledCommand compiledCommand;
+public class SpigotCommand implements CommandExecutor, TabCompleter {
+    private final Map<String, CompiledCommand> commandMap = new HashMap<>();
     private final DiscordLinkSpigot plugin;
+    private final Locale locale;
 
-    public SpigotCommand(String name, CompiledCommand compiledCommand, DiscordLinkSpigot plugin) {
-        super(name);
-        this.compiledCommand = compiledCommand;
+    public SpigotCommand(DiscordLinkSpigot plugin, Locale locale) {
         this.plugin = plugin;
+        this.locale = locale;
+    }
+
+    public void addCommand(CompiledCommand compiledCommand) {
+        Arrays.stream(compiledCommand.getBaseCommand().getAliases())
+                .forEach(alias -> commandMap.put(alias, compiledCommand));
     }
 
     @Override
-    public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        com.github.riku32.discordlink.core.platform.command.CommandSender commandSender =
-                new com.github.riku32.discordlink.core.platform.command.CommandSender(sender instanceof Player ? new SpigotPlayer((Player) sender) : null, plugin);
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command commandObj, @NotNull String label, @NotNull String[] args) {
+        com.github.riku32.discordlink.core.platform.command.CommandSender sender =
+                new com.github.riku32.discordlink.core.platform.command.CommandSender(commandSender instanceof Player ? new SpigotPlayer((Player) commandSender) : null, plugin);
 
         if (args.length < 1) {
-            if (compiledCommand.getBaseCommand().getArgumentData().size() != 0) {
-                commandSender.sendMessage("Invalid arguments provided");
+            sender.sendMessage(locale.getElement("command.main")
+                    .set("version", plugin.getDescription().getVersion()).toString());
+            return true;
+        }
+
+        CompiledCommand command = commandMap.get(args[0]);
+        if (command == null) {
+            sender.sendMessage(locale.getElement("command.invalid_command").error());
+            return false;
+        }
+
+        // Make sure base command permission is met
+        if (command.getBaseCommand().getPermission() != null && !commandSender.hasPermission(command.getBaseCommand().getPermission())) {
+            sender.sendMessage(locale.getElement("command.no_permission")
+                    .set("permission", command.getBaseCommand().getPermission()).error());
+            return false;
+        }
+
+        // Execute base command without arguments
+        if (args.length == 1) {
+            if (command.getBaseCommand().getArguments().size() != 0) {
+                sender.sendMessage(locale.getElement("command.invalid_args")
+                        .set("command", args[0]).error());
                 return false;
             }
 
             try {
-                compiledCommand.getBaseCommand().getMethod().invoke(compiledCommand.getBaseCommand().getInstance(), commandSender);
+                command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), sender);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -43,31 +73,43 @@ public class SpigotCommand extends Command {
             return true;
         }
 
-        for (CommandData commandData : compiledCommand.getSubCommands()) {
+        // Execute sub commands with arguments
+        for (CommandData commandData : command.getSubCommands()) {
             for (String alias : commandData.getAliases()) {
-                if (alias.equals(args[0])) {
+                // Arg 0 will contain the base command name since the command is prefixed, Arg 1 will contain the subcommand
+                if (alias.equals(args[1])) {
                     try {
-                        // Subtract one from length since one of the args will be the subcommand name
-                        if (commandData.getArgumentData().size() != args.length - 1) {
-                            commandSender.sendMessage("Invalid arguments provided");
+                        // Check if sub command permissions are met
+                        if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
+                            sender.sendMessage(locale.getElement("command.no_permission")
+                                    .set("permission", commandData.getPermission()).error());
                             return false;
                         }
 
-                        for (int i = 0; i < commandData.getArgumentData().size(); i++) {
-                            ArgumentData argumentData = commandData.getArgumentData().get(i);
-                            if (argumentData.getChoices() == null) continue;
-
-                            if (!Arrays.asList(argumentData.getChoices()).contains(args[i + 1])) {
-                                commandSender.sendMessage("Invalid arguments provided");
-                                return false;
-                            }
+                        // Subtract two from length since one of the args will be the subcommand name and one will be base command
+                        if (commandData.getArguments().size() != args.length - 2) {
+                            sender.sendMessage(locale.getElement("command.invalid_args")
+                                    .set("command", String.format("%s %s", args[0], alias)).error());
+                            return false;
                         }
 
-                        Object[] arguments = new Object[args.length];
-                        arguments[0] = commandSender;
-                        System.arraycopy(args, 1, arguments, 1, args.length - 1);
+                        Object[] arguments = new Object[args.length - 1];
+                        arguments[0] = sender;
+                        System.arraycopy(args, 2, arguments, 1, args.length - 2);
 
-                        commandData.getMethod().invoke(compiledCommand.getBaseCommand().getInstance(), arguments);
+                        for (int i = 2; i < args.length; i++) {
+                            ArgumentParseResult parseResult = parseArgument(commandData.getArguments().get(i - 2), args[i]);
+
+                            if (!parseResult.success) {
+                                sender.sendMessage(locale.getElement("command.invalid_args")
+                                        .set("command", String.format("%s %s", args[0], alias)).error());
+                                return false;
+                            }
+
+                            arguments[i - 1] = parseResult.parsed;
+                        }
+
+                        commandData.getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -76,27 +118,32 @@ public class SpigotCommand extends Command {
             }
         }
 
-        if (compiledCommand.getBaseCommand().getArgumentData().size() != args.length) {
-            commandSender.sendMessage("Invalid arguments provided");
+        // Validate arguments for base with args, subtract one from length because command name is an arg
+        if (command.getBaseCommand().getArguments().size() != args.length - 1) {
+            sender.sendMessage(locale.getElement("command.invalid_args")
+                    .set("command", args[0]).error());
             return false;
         }
 
-        for (int i = 0; i < compiledCommand.getBaseCommand().getArgumentData().size(); i++) {
-            ArgumentData argumentData = compiledCommand.getBaseCommand().getArgumentData().get(i);
-            if (argumentData.getChoices() == null) continue;
+        Object[] arguments = new Object[args.length];
+        arguments[0] = sender;
+        System.arraycopy(args, 1, arguments, 1, args.length - 1);
 
-            if (!Arrays.asList(argumentData.getChoices()).contains(args[i])) {
-                commandSender.sendMessage("Invalid arguments provided");
+        for (int i = 1; i < args.length; i++) {
+            ArgumentParseResult parseResult = parseArgument(command.getBaseCommand().getArguments().get(i - 1), args[i]);
+
+            if (!parseResult.success) {
+                sender.sendMessage(locale.getElement("command.invalid_args")
+                        .set("command", args[0]).error());
                 return false;
             }
+
+            // Set the argument to one after
+            arguments[i] = parseResult.parsed;
         }
 
-        Object[] arguments = new Object[args.length + 1];
-        arguments[0] = commandSender;
-        System.arraycopy(args, 0, arguments, 1, args.length);
-
         try {
-            compiledCommand.getBaseCommand().getMethod().invoke(compiledCommand.getBaseCommand().getInstance(), arguments);
+            command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -105,50 +152,94 @@ public class SpigotCommand extends Command {
         return true;
     }
 
-    @NotNull
+    @Nullable
     @Override
-    public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
-        if (args.length < 1) return ImmutableList.of();
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        if (args.length < 1) return ImmutableList.of("");
+
+        // Returns for base command name
+        if (args.length == 1)
+            return new ArrayList<>(commandMap.keySet());
+
+        CompiledCommand compiledCommand = commandMap.get(args[0]);
+        if (compiledCommand == null) return ImmutableList.of("");
 
         // Returns for subcommands and choices for base command
-        if (args.length == 1) {
-            List<String> argList = new ArrayList<>();
-            for (CommandData commandData : compiledCommand.getSubCommands())
-                argList.addAll(Arrays.asList(commandData.getAliases()));
-
-            if (compiledCommand.getBaseCommand().getArgumentData().size() > 0) {
-                String[] choices = compiledCommand.getBaseCommand().getArgumentData().get(0).getChoices();
-                if (choices != null)
-                    argList.addAll(Arrays.asList(choices));
-            }
-
-            return argList;
-        }
+        if (args.length == 2)
+            return getCompletion(compiledCommand.getBaseCommand().getArguments().get(0), compiledCommand.getSubCommands());
 
         // Completion for subcommands at any stage
         for (CommandData commandData : compiledCommand.getSubCommands()) {
-            if (!Arrays.asList(commandData.getAliases()).contains(args[0])) continue;
+            if (!Arrays.asList(commandData.getAliases()).contains(args[1])) continue;
+            if (commandData.getArguments().size() > args.length - 3)
+                return getCompletion(commandData.getArguments().get(args.length - 3), null);
 
-            List<String> argList = new ArrayList<>();
-
-            // Subtract by two because subcommand and accessing list
-            if (commandData.getArgumentData().size() > args.length - 2) {
-                String[] choices = commandData.getArgumentData().get(args.length - 2).getChoices();
-                if (choices != null)
-                    argList.addAll(Arrays.asList(choices));
-            }
-
-            return argList;
+            return ImmutableList.of("");
         }
 
         // Completion for base at any stage
-        List<String> argList = new ArrayList<>();
-        if (compiledCommand.getBaseCommand().getArgumentData().size() > args.length - 1) {
-            String[] choices = compiledCommand.getBaseCommand().getArgumentData().get(args.length - 1).getChoices();
-            if (choices != null)
-                argList.addAll(Arrays.asList(choices));
+        if (compiledCommand.getBaseCommand().getArguments().size() > args.length - 2)
+            return getCompletion(compiledCommand.getBaseCommand().getArguments().get(args.length - 2), null);
+
+        return ImmutableList.of("");
+    }
+
+    private static class ArgumentParseResult {
+        public final boolean success;
+        public final Object parsed;
+
+        public ArgumentParseResult(boolean success, Object parsed) {
+            this.success = success;
+            this.parsed = parsed;
+        }
+    }
+
+    private ArgumentParseResult parseArgument(ArgumentData argumentData, String argument) {
+        if (argumentData == null)
+            return new ArgumentParseResult(false, null);
+
+        if (argumentData.getArgumentType() == boolean.class) {
+            if (!argument.equals("true") && !argument.equals("false"))
+                return new ArgumentParseResult(false, null);
+
+            return new ArgumentParseResult(true, Boolean.parseBoolean(argument));
+        } else if (argumentData.getArgumentType() == String.class) {
+            if (argumentData.getChoices() == null)
+                return new ArgumentParseResult(true, argument);
+
+            if (Arrays.asList(argumentData.getChoices()).contains(argument))
+                return new ArgumentParseResult(true, argument);
+        } else if (argumentData.getArgumentType() == PlatformPlayer.class) {
+            PlatformPlayer player = plugin.getPlayer(argument);
+            if (player != null)
+                return new ArgumentParseResult(true, player);
         }
 
-        return argList;
+        return new ArgumentParseResult(false, null);
+    }
+
+    private List<String> getCompletion(ArgumentData argument, Set<CommandData> subCommands) {
+        List<String> completions = new ArrayList<>();
+
+        if (argument.getArgumentType() == boolean.class) {
+            completions.addAll(ImmutableList.of("true", "false"));
+        } else if (argument.getArgumentType() == String.class) {
+            if (argument.getChoices() != null)
+                completions.addAll(Arrays.asList(argument.getChoices()));
+        } else if (argument.getArgumentType() == PlatformPlayer.class) {
+            completions.addAll(plugin.getPlayers().stream()
+                    .map(PlatformPlayer::getName)
+                    .collect(Collectors.toUnmodifiableSet()));
+        }
+
+        if (subCommands != null) {
+            completions.addAll(subCommands.stream()
+                    .map(CommandData::getAliases)
+                    .map(Arrays::asList)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toUnmodifiableList()));
+        }
+
+        return completions;
     }
 }

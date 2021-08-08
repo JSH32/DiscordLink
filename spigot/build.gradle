@@ -29,6 +29,12 @@ dependencies {
     implementation 'co.aikar:acf-bukkit:0.5.0-SNAPSHOT'
 }
 
+processResources {
+    filesMatching("plugin.yml") {
+        expand("version": project.version)
+    }
+}
+
 shadowJar {
     archiveBaseName.set('discordlink-spigot')
 
