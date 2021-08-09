@@ -165,8 +165,12 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         if (compiledCommand == null) return ImmutableList.of("");
 
         // Returns for subcommands and choices for base command
-        if (args.length == 2)
-            return getCompletion(compiledCommand.getBaseCommand().getArguments().get(0), compiledCommand.getSubCommands());
+        if (args.length == 2) {
+            if (compiledCommand.getBaseCommand().getArguments().size() > 0)
+                return getCompletion(compiledCommand.getBaseCommand().getArguments().get(0), compiledCommand.getSubCommands());
+
+            return getCompletion(null, compiledCommand.getSubCommands());
+        }
 
         // Completion for subcommands at any stage
         for (CommandData commandData : compiledCommand.getSubCommands()) {
@@ -221,15 +225,17 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
     private List<String> getCompletion(ArgumentData argument, Set<CommandData> subCommands) {
         List<String> completions = new ArrayList<>();
 
-        if (argument.getArgumentType() == boolean.class) {
-            completions.addAll(ImmutableList.of("true", "false"));
-        } else if (argument.getArgumentType() == String.class) {
-            if (argument.getChoices() != null)
-                completions.addAll(Arrays.asList(argument.getChoices()));
-        } else if (argument.getArgumentType() == PlatformPlayer.class) {
-            completions.addAll(plugin.getPlayers().stream()
-                    .map(PlatformPlayer::getName)
-                    .collect(Collectors.toUnmodifiableSet()));
+        if (argument != null) {
+            if (argument.getArgumentType() == boolean.class) {
+                completions.addAll(ImmutableList.of("true", "false"));
+            } else if (argument.getArgumentType() == String.class) {
+                if (argument.getChoices() != null)
+                    completions.addAll(Arrays.asList(argument.getChoices()));
+            } else if (argument.getArgumentType() == PlatformPlayer.class) {
+                completions.addAll(plugin.getPlayers().stream()
+                        .map(PlatformPlayer::getName)
+                        .collect(Collectors.toUnmodifiableSet()));
+            }
         }
 
         if (subCommands != null) {

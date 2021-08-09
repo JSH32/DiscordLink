@@ -53,6 +53,8 @@ public class CompiledCommand {
                 if (parameter.getType() != String.class && parameter.isAnnotationPresent(Choice.class))
                     throw new CommandCompileException("Only a String argument can be annotated with Choice");
             }
+
+            subCommand.getMethod().setAccessible(true);
         }
     }
 
