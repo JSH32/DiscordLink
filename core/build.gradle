@@ -2,4 +2,7 @@ dependencies {
     implementation 'org.xerial:sqlite-jdbc:3.34.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'me.carleslc.Simple-YAML:Simple-Yaml:1.7.2'
+
+    implementation 'net.dv8tion:JDA:4.3.0_277'
+    implementation 'club.minnced:discord-webhooks:0.5.7'
 }
