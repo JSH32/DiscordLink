@@ -1,10 +1,7 @@
 package com.github.riku32.discordlink.core.database;
 
-import lombok.Data;
-
 import java.util.UUID;
 
-@Data
 public class PlayerInfo {
     private final String discordID;
     private final UUID uuid;
@@ -14,5 +11,17 @@ public class PlayerInfo {
         this.discordID = discordID;
         this.uuid = uuid;
         this.verified = verified;
+    }
+
+    public String getDiscordID() {
+        return discordID;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public boolean isVerified() {
+        return verified;
     }
 }

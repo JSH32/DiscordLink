@@ -15,18 +15,14 @@ repositories {
     maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url = 'https://oss.sonatype.org/content/repositories/central' }
     maven { url = "https://repo.aikar.co/content/groups/aikar" }
+    maven { url = "https://jitpack.io" }
 }
 
 dependencies {
     implementation project(':core')
 
     compileOnly 'org.spigotmc:spigot-api:1.16.1-R0.1-SNAPSHOT'
-    compileOnly 'net.dv8tion:JDA:4.3.0_277'
-    compileOnly 'com.github.freya022:BotCommands:7dccb0d'
-    compileOnly 'club.minnced:discord-webhooks:0.5.7'
-
-    compileOnly 'co.aikar:acf-bukkit:0.5.0-SNAPSHOT'
-    implementation 'co.aikar:acf-bukkit:0.5.0-SNAPSHOT'
+    compileOnly 'org.jetbrains:annotations:16.0.2'
 }
 
 processResources {
@@ -37,9 +33,6 @@ processResources {
 
 shadowJar {
     archiveBaseName.set('discordlink-spigot')
-
-    relocate 'co.aikar.commands', 'com.github.riku32.discordlink.lib.acf'
-    relocate 'co.aikar.locales', 'com.github.riku32.discordlink.lib.locales'
 }
 
 artifacts {

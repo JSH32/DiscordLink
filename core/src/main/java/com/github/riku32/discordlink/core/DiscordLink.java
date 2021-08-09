@@ -1,31 +1,29 @@
 package com.github.riku32.discordlink.core;
 
-import com.github.riku32.discordlink.core.commands.CommandTest;
+import com.github.riku32.discordlink.core.commands.CommandLink;
 import com.github.riku32.discordlink.core.database.Database;
 import com.github.riku32.discordlink.core.eventbus.ListenerRegisterException;
 import com.github.riku32.discordlink.core.events.JoinEvent;
+import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
 import com.github.riku32.discordlink.core.platform.command.CommandCompileException;
 import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
-import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Properties;
 
 public class DiscordLink {
-    @Getter
     private final PlatformPlugin plugin;
-
-    @Getter
     private Database database;
-
-    @Getter
     private Config config;
+    private Locale locale;
 
     public DiscordLink(PlatformPlugin plugin) {
         this.plugin = plugin;
@@ -61,6 +59,18 @@ public class DiscordLink {
         }
 
         try {
+            Properties prop = new Properties();
+            InputStream localeStream = getClass().getClassLoader().getResourceAsStream("locale/main.properties");
+            prop.load(localeStream);
+            Objects.requireNonNull(localeStream).close();
+            locale = new Locale(prop);
+        } catch (Exception e) {
+            e.printStackTrace();
+            disable();
+            return;
+        }
+
+        try {
             plugin.getEventBus().register(new JoinEvent());
         } catch (ListenerRegisterException e) {
             e.printStackTrace();
@@ -68,7 +78,7 @@ public class DiscordLink {
         }
 
         try {
-            plugin.registerCommand(new CompiledCommand(new CommandTest()));
+            plugin.registerCommand(new CompiledCommand(new CommandLink(this)));
         } catch (CommandCompileException e) {
             e.printStackTrace();
             disable();
@@ -79,5 +89,21 @@ public class DiscordLink {
         if (database != null) database.close();
 
         plugin.disable();
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public PlatformPlugin getPlugin() {
+        return plugin;
     }
 }

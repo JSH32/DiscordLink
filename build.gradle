@@ -18,11 +18,6 @@ subprojects {
         maven { url 'https://jitpack.io' }
     }
 
-    dependencies {
-        compileOnly 'org.projectlombok:lombok:1.18.20'
-        annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    }
-
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(11)

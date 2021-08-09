@@ -1,13 +1,11 @@
 package com.github.riku32.discordlink.core;
 
-import lombok.Data;
 import org.simpleyaml.configuration.file.YamlFile;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
-@Data
 public class Config {
     private final String token;
     private final String serverID;
@@ -159,5 +157,117 @@ public class Config {
             throw new NoSuchElementException(path + " was not found in the config");
 
         return String.valueOf(value);
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getServerID() {
+        return serverID;
+    }
+
+    public String getOwnerID() {
+        return ownerID;
+    }
+
+    public boolean isChatEnabled() {
+        return chatEnabled;
+    }
+
+    public boolean isPlayerFormatEnabled() {
+        return playerFormatEnabled;
+    }
+
+    public String getPlayerFormatLinked() {
+        return playerFormatLinked;
+    }
+
+    public String getPlayerFormatUnlinked() {
+        return playerFormatUnlinked;
+    }
+
+    public String getDiscordFormatLinked() {
+        return discordFormatLinked;
+    }
+
+    public String getDiscordFormatUnlinked() {
+        return discordFormatUnlinked;
+    }
+
+    public boolean isCrossChatEnabled() {
+        return crossChatEnabled;
+    }
+
+    public String getChannelID() {
+        return channelID;
+    }
+
+    public String getWebhook() {
+        return webhook;
+    }
+
+    public boolean isChannelBroadcastDeath() {
+        return channelBroadcastDeath;
+    }
+
+    public boolean isChannelBroadcastJoin() {
+        return channelBroadcastJoin;
+    }
+
+    public boolean isChannelBroadcastQuit() {
+        return channelBroadcastQuit;
+    }
+
+    public String getKickNotInGuild() {
+        return kickNotInGuild;
+    }
+
+    public String getKickBanned() {
+        return kickBanned;
+    }
+
+    public String getKickToS() {
+        return kickToS;
+    }
+
+    public boolean isStatusEnabled() {
+        return statusEnabled;
+    }
+
+    public String getStatusJoinLinked() {
+        return statusJoinLinked;
+    }
+
+    public String getStatusJoinUnlinked() {
+        return statusJoinUnlinked;
+    }
+
+    public String getStatusQuitLinked() {
+        return statusQuitLinked;
+    }
+
+    public String getStatusQuitUnlinked() {
+        return statusQuitUnlinked;
+    }
+
+    public String getStatusDeathLinked() {
+        return statusDeathLinked;
+    }
+
+    public String getStatusDeathUnlinked() {
+        return statusDeathUnlinked;
+    }
+
+    public boolean isLinkRequired() {
+        return linkRequired;
+    }
+
+    public boolean isVerifySpawn() {
+        return verifySpawn;
+    }
+
+    public boolean isAllowUnlink() {
+        return allowUnlink;
     }
 }
