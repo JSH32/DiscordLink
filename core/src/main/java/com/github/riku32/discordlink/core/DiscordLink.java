@@ -60,7 +60,7 @@ public class DiscordLink {
 
         try {
             Properties prop = new Properties();
-            InputStream localeStream = getClass().getClassLoader().getResourceAsStream("locale/main.properties");
+            InputStream localeStream = getClass().getClassLoader().getResourceAsStream("locale/en-US.properties");
             prop.load(localeStream);
             Objects.requireNonNull(localeStream).close();
             locale = new Locale(prop);

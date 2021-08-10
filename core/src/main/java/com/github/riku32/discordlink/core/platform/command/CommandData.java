@@ -10,11 +10,15 @@ public class CommandData {
     private final Method method;
     private final Command commandAnnotation;
     private final List<ArgumentData> argumentData;
+    private final boolean userOnly;
 
-    public CommandData(Object instance, Method method, boolean mainCommand, List<ArgumentData> argumentData) {
+    public CommandData(Object instance, Method method, boolean mainCommand, List<ArgumentData> argumentData, boolean userOnly) {
         this.instance = instance;
         this.method = method;
         this.argumentData = argumentData;
+        this.userOnly = userOnly;
+
+        method.setAccessible(true);
 
         if (mainCommand)
             commandAnnotation = instance.getClass().getAnnotation(Command.class);
@@ -40,5 +44,9 @@ public class CommandData {
 
     public String getPermission() {
         return commandAnnotation.permission().equals("") ? null : commandAnnotation.permission();
+    }
+
+    public boolean isUserOnly() {
+        return userOnly;
     }
 }

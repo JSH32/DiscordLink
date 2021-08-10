@@ -2,7 +2,6 @@ package com.github.riku32.discordlink.spigot;
 
 import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.eventbus.EventBus;
-import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
@@ -14,7 +13,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -29,27 +27,16 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
         this.eventBus = new EventBus(getLogger());
         getServer().getPluginManager().registerEvents(new MainListener(eventBus), this);
 
-        Locale commandLocale;
-        try {
-            Properties prop = new Properties();
-            InputStream localeStream = getResource("locale/command.properties");
-            prop.load(localeStream);
-            Objects.requireNonNull(localeStream).close();
-            commandLocale = new Locale(prop);
-        } catch (Exception e) {
-            e.printStackTrace();
-            disable();
-            return;
-        }
+        this.commandManager = new SpigotCommand(this);
 
-        this.commandManager = new SpigotCommand(this, commandLocale);
+        // This should automatically create and register the platform plugin
+        DiscordLink discordLink = new DiscordLink(this);
+        commandManager.setLocale(discordLink.getLocale());
 
+        // Register command after initialization
         PluginCommand mainCommand = Objects.requireNonNull(this.getCommand("discord"));
         mainCommand.setExecutor(commandManager);
         mainCommand.setTabCompleter(commandManager);
-
-        // This should automatically create and register the platform plugin
-        new DiscordLink(this);
     }
 
     @Override

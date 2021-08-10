@@ -17,13 +17,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO: Clean this entire class up
 public class SpigotCommand implements CommandExecutor, TabCompleter {
     private final Map<String, CompiledCommand> commandMap = new HashMap<>();
     private final DiscordLinkSpigot plugin;
-    private final Locale locale;
+    private Locale locale;
 
-    public SpigotCommand(DiscordLinkSpigot plugin, Locale locale) {
+    public SpigotCommand(DiscordLinkSpigot plugin) {
         this.plugin = plugin;
+    }
+
+    public void setLocale(Locale locale) {
         this.locale = locale;
     }
 
@@ -38,7 +42,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
                 new com.github.riku32.discordlink.core.platform.command.CommandSender(commandSender instanceof Player ? new SpigotPlayer((Player) commandSender) : null, plugin);
 
         if (args.length < 1) {
-            sender.sendMessage(locale.getElement("command.main")
+            sender.sendMessage(locale.getElement("command.version")
                     .set("version", plugin.getDescription().getVersion()).toString());
             return true;
         }
@@ -46,6 +50,12 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         CompiledCommand command = commandMap.get(args[0]);
         if (command == null) {
             sender.sendMessage(locale.getElement("command.invalid_command").error());
+            return false;
+        }
+
+        if (command.getBaseCommand().isUserOnly() && sender.isConsole()) {
+            sender.sendMessage(locale.getElement("command.no_console")
+                    .set("command", args[0]).error());
             return false;
         }
 
@@ -65,12 +75,11 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             }
 
             try {
-                command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), sender);
+                return (boolean) command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), sender);
             } catch (Exception e) {
                 e.printStackTrace();
+                return false;
             }
-
-            return true;
         }
 
         // Execute sub commands with arguments
@@ -79,6 +88,12 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
                 // Arg 0 will contain the base command name since the command is prefixed, Arg 1 will contain the subcommand
                 if (alias.equals(args[1])) {
                     try {
+                        if (commandData.isUserOnly() && sender.isConsole()) {
+                            sender.sendMessage(locale.getElement("command.no_console")
+                                    .set("command", String.format("%s %s", args[0], alias)).error());
+                            return false;
+                        }
+
                         // Check if sub command permissions are met
                         if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
                             sender.sendMessage(locale.getElement("command.no_permission")
@@ -109,11 +124,11 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
                             arguments[i - 1] = parseResult.parsed;
                         }
 
-                        commandData.getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
+                        return (boolean) commandData.getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
                     } catch (Exception e) {
                         e.printStackTrace();
+                        return false;
                     }
-                    return true;
                 }
             }
         }
@@ -143,13 +158,11 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         }
 
         try {
-            command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
+            return (boolean) command.getBaseCommand().getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-
-        return true;
     }
 
     @Nullable

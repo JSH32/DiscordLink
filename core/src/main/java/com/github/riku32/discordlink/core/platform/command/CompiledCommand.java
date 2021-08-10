@@ -21,8 +21,11 @@ public class CompiledCommand {
     );
 
     public CompiledCommand(Object command) throws CommandCompileException {
+        Command commandAnnotation = command.getClass().getAnnotation(Command.class);
+        if (commandAnnotation == null)
+            throw new CommandCompileException("The command must be annotated with the Command annotation");
+
         Collection<Method> defaultHandlers = Arrays.stream(command.getClass().getDeclaredMethods())
-                .peek(m -> m.setAccessible(true))
                 .filter(m -> m.isAnnotationPresent(Default.class))
                 .collect(Collectors.toUnmodifiableSet());
 
@@ -30,17 +33,23 @@ public class CompiledCommand {
             throw new CommandCompileException("Each command must have exactly one Default handler");
 
         Method baseMethod = defaultHandlers.iterator().next();
-        baseCommand = new CommandData(command, baseMethod, true, getArguments(baseMethod));
+        baseCommand = new CommandData(command, baseMethod, true, getArguments(baseMethod), commandAnnotation.userOnly());
+
+        if (baseMethod.getReturnType() != boolean.class)
+            throw new CommandCompileException("Command must return a boolean");
 
         if (!baseMethod.getParameterTypes()[0].equals(CommandSender.class))
             throw new CommandCompileException("Command handler's first argument must be a CommandSender");
 
         subCommands = Arrays.stream(command.getClass().getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(Command.class))
-                .map(m -> new CommandData(command, m, false, getArguments(m)))
+                .map(m -> new CommandData(command, m, false, getArguments(m), m.getAnnotation(Command.class).userOnly()))
                 .collect(Collectors.toUnmodifiableSet());
 
         for (CommandData subCommand : subCommands) {
+            if (subCommand.getMethod().getReturnType() != boolean.class)
+                throw new CommandCompileException("Command must return a boolean");
+
             if (!subCommand.getMethod().getParameterTypes()[0].equals(CommandSender.class))
                 throw new CommandCompileException("Command handler's first argument must be a CommandSender");
 
