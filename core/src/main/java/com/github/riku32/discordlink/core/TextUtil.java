@@ -4,7 +4,7 @@ public final class TextUtil {
     private static final char COLOR_CHAR = '\u00A7';
 
     /**
-     * Colorize a Minecraft string
+     * Colorize a string with Minecraft color char
      *
      * @param string to colorize
      * @return colorized string

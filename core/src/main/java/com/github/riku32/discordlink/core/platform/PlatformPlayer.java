@@ -3,7 +3,7 @@ package com.github.riku32.discordlink.core.platform;
 import java.util.UUID;
 
 /**
- * Platform agnostic player implementation
+ * Platform-agnostic player implementation
  */
 public interface PlatformPlayer {
     /**
@@ -40,6 +40,4 @@ public interface PlatformPlayer {
      * @return player
      */
     Object getPlatformPlayer();
-
-
 }
