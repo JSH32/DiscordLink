@@ -1,17 +1,15 @@
 package com.github.riku32.discordlink.core.platform.command.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Command annotation must be applied to a class to be used as a parent command.
  * <p>
- * The default base handler must be annotated with {@link Default}
+ * The default base handler <b>MUST</b> be annotated with {@link Default}
  * <p>
- * This annotation can also be applied to child methods of the applied class, this only supports ONE level of nesting
+ * This annotation can also be applied to child methods of the applied class, this only supports <b>ONE</b> level of nesting
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Command {

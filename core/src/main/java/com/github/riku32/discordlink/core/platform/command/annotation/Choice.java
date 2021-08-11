@@ -1,10 +1,13 @@
 package com.github.riku32.discordlink.core.platform.command.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
+/**
+ * Apply to a parameter of a command to indicate that the only value this argument can and will receive will be one of the choices
+ * <p>
+ * This may only be applied to {@link String} arguments
+ */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface Choice {

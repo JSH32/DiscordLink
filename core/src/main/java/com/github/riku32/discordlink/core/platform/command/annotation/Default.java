@@ -1,13 +1,13 @@
 package com.github.riku32.discordlink.core.platform.command.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Apply to the default command in a command object
+ * <p>
+ * Every command annotated class <b>MUST</b> have at least one method annotated with this
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Default {
