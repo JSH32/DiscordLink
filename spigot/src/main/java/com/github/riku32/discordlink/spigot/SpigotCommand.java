@@ -21,10 +21,12 @@ import java.util.stream.Collectors;
 public class SpigotCommand implements CommandExecutor, TabCompleter {
     private final Map<String, CompiledCommand> commandMap = new HashMap<>();
     private final DiscordLinkSpigot plugin;
+    private final PlayerRegistry playerRegistry;
     private Locale locale;
 
-    public SpigotCommand(DiscordLinkSpigot plugin) {
+    public SpigotCommand(DiscordLinkSpigot plugin, PlayerRegistry playerRegistry) {
         this.plugin = plugin;
+        this.playerRegistry = playerRegistry;
     }
 
     public void setLocale(Locale locale) {
@@ -38,8 +40,9 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command commandObj, @NotNull String label, @NotNull String[] args) {
+        Player bukkitPlayer = ((Player) commandSender).getPlayer();
         com.github.riku32.discordlink.core.platform.command.CommandSender sender =
-                new com.github.riku32.discordlink.core.platform.command.CommandSender(commandSender instanceof Player ? new SpigotPlayer((Player) commandSender) : null, plugin);
+                new com.github.riku32.discordlink.core.platform.command.CommandSender(bukkitPlayer != null ? playerRegistry.getPlayer(bukkitPlayer) : null, plugin);
 
         if (args.length < 1) {
             sender.sendMessage(locale.getElement("command.version")

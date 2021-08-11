@@ -1,16 +1,16 @@
 package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.platform.events.PlayerJoinEvent;
+import com.github.riku32.discordlink.core.eventbus.events.PlayerJoinEvent;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
 
 public class SpigotJoinEvent extends PlayerJoinEvent {
     private final org.bukkit.event.player.PlayerJoinEvent joinEvent;
     private final PlatformPlayer player;
 
-    public SpigotJoinEvent(org.bukkit.event.player.PlayerJoinEvent joinEvent) {
+    public SpigotJoinEvent(org.bukkit.event.player.PlayerJoinEvent joinEvent, PlatformPlayer player) {
         this.joinEvent = joinEvent;
-        this.player = new SpigotPlayer(joinEvent.getPlayer());
+        this.player = player;
     }
 
     @Override

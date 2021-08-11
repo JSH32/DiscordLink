@@ -18,19 +18,23 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugin {
+    private DiscordLink discordLink;
     private EventBus eventBus;
-
     private SpigotCommand commandManager;
+    private PlayerRegistry playerRegistry;
 
     @Override
     public void onEnable() {
-        this.eventBus = new EventBus(getLogger());
-        getServer().getPluginManager().registerEvents(new MainListener(eventBus), this);
+        this.playerRegistry = new PlayerRegistry();
+        getServer().getPluginManager().registerEvents(playerRegistry, this);
 
-        this.commandManager = new SpigotCommand(this);
+        this.eventBus = new EventBus(getLogger());
+        getServer().getPluginManager().registerEvents(new MainListener(eventBus, playerRegistry), this);
+
+        this.commandManager = new SpigotCommand(this, playerRegistry);
 
         // This should automatically create and register the platform plugin
-        DiscordLink discordLink = new DiscordLink(this);
+        discordLink = new DiscordLink(this);
         commandManager.setLocale(discordLink.getLocale());
 
         // Register command after initialization
@@ -42,18 +46,18 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
     @Override
     public PlatformPlayer getPlayer(UUID uuid) {
         Player player = this.getServer().getPlayer(uuid);
-        return player == null ? null : new SpigotPlayer(player);
+        return player == null ? null : playerRegistry.getPlayer(player);
     }
 
     @Override
     public PlatformPlayer getPlayer(String username) {
         Player player = this.getServer().getPlayer(username);
-        return player == null ? null : new SpigotPlayer(player);
+        return player == null ? null : playerRegistry.getPlayer(player);
     }
 
     @Override
     public Set<PlatformPlayer> getPlayers() {
-        return getServer().getOnlinePlayers().stream().map(SpigotPlayer::new)
+        return getServer().getOnlinePlayers().stream().map(playerRegistry::getPlayer)
                 .collect(Collectors.toUnmodifiableSet());
     }
 

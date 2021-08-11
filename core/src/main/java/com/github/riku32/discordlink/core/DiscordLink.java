@@ -1,9 +1,11 @@
 package com.github.riku32.discordlink.core;
 
-import com.github.riku32.discordlink.core.commands.CommandLink;
+import com.github.riku32.discordlink.core.bot.Bot;
+import com.github.riku32.discordlink.core.commands.CommandFreeze;
 import com.github.riku32.discordlink.core.database.Database;
 import com.github.riku32.discordlink.core.eventbus.ListenerRegisterException;
 import com.github.riku32.discordlink.core.events.JoinEvent;
+import com.github.riku32.discordlink.core.events.MoveEvent;
 import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
@@ -24,6 +26,9 @@ public class DiscordLink {
     private Database database;
     private Config config;
     private Locale locale;
+    private Bot bot;
+
+    private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
     public DiscordLink(PlatformPlugin plugin) {
         this.plugin = plugin;
@@ -66,12 +71,21 @@ public class DiscordLink {
             locale = new Locale(prop);
         } catch (Exception e) {
             e.printStackTrace();
-            disable();
+            disable(false);
             return;
         }
 
         try {
-            plugin.getEventBus().register(new JoinEvent());
+            bot = new Bot(this);
+        } catch (LoginException | InterruptedException e) {
+            e.printStackTrace();
+            disable(false);
+            return;
+        }
+
+        try {
+            plugin.getEventBus().register(new JoinEvent(bot.getChannel()));
+            plugin.getEventBus().register(new MoveEvent(frozenPlayers));
         } catch (ListenerRegisterException e) {
             e.printStackTrace();
             disable(false);
@@ -79,7 +93,7 @@ public class DiscordLink {
         }
 
         try {
-            plugin.registerCommand(new CompiledCommand(new CommandLink(this)));
+            plugin.registerCommand(new CompiledCommand(new CommandFreeze(frozenPlayers)));
         } catch (CommandCompileException e) {
             e.printStackTrace();
             disable(false);

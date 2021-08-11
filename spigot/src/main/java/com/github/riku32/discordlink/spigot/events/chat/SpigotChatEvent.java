@@ -1,7 +1,7 @@
 package com.github.riku32.discordlink.spigot.events.chat;
 
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.platform.events.PlayerChatEvent;
+import com.github.riku32.discordlink.core.eventbus.events.PlayerChatEvent;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
@@ -11,9 +11,9 @@ public class SpigotChatEvent extends PlayerChatEvent {
     private final AsyncPlayerChatEvent chatEvent;
     private final PlatformPlayer player;
 
-    public SpigotChatEvent(AsyncPlayerChatEvent chatEvent) {
+    public SpigotChatEvent(AsyncPlayerChatEvent chatEvent, PlatformPlayer player) {
         this.chatEvent = chatEvent;
-        this.player = new SpigotPlayer(chatEvent.getPlayer());
+        this.player = player;
     }
 
     @Override
