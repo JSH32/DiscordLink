@@ -5,19 +5,19 @@ import com.github.riku32.discordlink.core.database.Database;
 import com.github.riku32.discordlink.core.eventbus.ListenerRegisterException;
 import com.github.riku32.discordlink.core.events.JoinEvent;
 import com.github.riku32.discordlink.core.locale.Locale;
+import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import com.github.riku32.discordlink.core.platform.PlatformPlugin;
 import com.github.riku32.discordlink.core.platform.command.CommandCompileException;
 import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
 
+import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 public class DiscordLink {
     private final PlatformPlugin plugin;
@@ -37,7 +37,7 @@ public class DiscordLink {
                 plugin.getLogger().severe("Unable to create configuration file");
                 plugin.getLogger().severe(e.getMessage());
             }
-            disable();
+            disable(false);
             return;
         }
 
@@ -45,7 +45,7 @@ public class DiscordLink {
             this.config = new Config(new String(Files.readAllBytes(configFile.toPath())));
         } catch (NoSuchElementException | IOException e) {
             plugin.getLogger().severe(e.getMessage());
-            disable();
+            disable(false);
             return;
         }
 
@@ -54,7 +54,7 @@ public class DiscordLink {
         } catch (SQLException e) {
             plugin.getLogger().severe("Unable to create/start the database");
             plugin.getLogger().severe(e.getMessage());
-            disable();
+            disable(false);
             return;
         }
 
@@ -74,21 +74,30 @@ public class DiscordLink {
             plugin.getEventBus().register(new JoinEvent());
         } catch (ListenerRegisterException e) {
             e.printStackTrace();
-            disable();
+            disable(false);
+            return;
         }
 
         try {
             plugin.registerCommand(new CompiledCommand(new CommandLink(this)));
         } catch (CommandCompileException e) {
             e.printStackTrace();
-            disable();
+            disable(false);
         }
     }
 
-    public void disable() {
+    /**
+     * Disable the plugin
+     *
+     * @param fromPluginShutdown was this called from the {@link PlatformPlugin} implementation?
+     */
+    public void disable(boolean fromPluginShutdown) {
+        if (bot != null) bot.shutdown();
         if (database != null) database.close();
 
-        plugin.disable();
+        // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
+        // This is to prevent a recursive loop of disable being called
+        if (fromPluginShutdown) plugin.disable();
     }
 
     public Locale getLocale() {

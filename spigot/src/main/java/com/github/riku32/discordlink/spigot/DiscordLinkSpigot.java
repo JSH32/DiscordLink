@@ -69,6 +69,8 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
 
     @Override
     public void disable() {
+        if (discordLink != null) discordLink.disable(true);
+
         Bukkit.getPluginManager().disablePlugin(this);
     }
 
