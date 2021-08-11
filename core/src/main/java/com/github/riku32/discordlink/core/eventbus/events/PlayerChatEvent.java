@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.core.platform.events;
+package com.github.riku32.discordlink.core.eventbus.events;
 
 import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 

@@ -1,7 +1,7 @@
 package com.github.riku32.discordlink.core.eventbus;
 
 import com.github.riku32.discordlink.core.eventbus.annotation.EventHandler;
-import com.github.riku32.discordlink.core.platform.events.Event;
+import com.github.riku32.discordlink.core.eventbus.events.Event;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+// TODO: Add priority to event listeners
 public class EventBus {
     private final Map<Class<?>, Set<InstancedMethod>> subscribers = new IdentityHashMap<>();
     private final Logger logger;
