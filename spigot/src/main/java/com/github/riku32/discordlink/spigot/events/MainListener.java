@@ -2,7 +2,6 @@ package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.eventbus.EventBus;
 import com.github.riku32.discordlink.spigot.PlayerRegistry;
-import com.github.riku32.discordlink.spigot.events.chat.SpigotChatEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
