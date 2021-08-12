@@ -1,6 +1,5 @@
 package com.github.riku32.discordlink.spigot;
 
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,6 +12,8 @@ import java.util.Map;
 
 /**
  * Preserve object equality and prevent creation of multiple identical {@link SpigotPlayer} objects
+ * <p>
+ * This must be registered as a listener on spigot
  */
 public class PlayerRegistry implements Listener {
     private final Map<Player, SpigotPlayer> convertedPlayerMap = new HashMap<>();
@@ -28,7 +29,7 @@ public class PlayerRegistry implements Listener {
     }
 
     // Run after every other event to clean up the player map
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onPlayerQuit(PlayerQuitEvent event) {
         convertedPlayerMap.remove(event.getPlayer());
     }
