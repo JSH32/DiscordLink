@@ -39,7 +39,7 @@ public class CommandLink {
     private Locale locale;
 
     @Default
-    private boolean link(CommandSender sender, String tag) throws DataException, IOException {
+    private boolean link(CommandSender sender, String tag) throws DataException {
         Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(sender.getPlayer().getUuid()));
         if (playerInfoOptional.isPresent()) {
             PlayerInfo playerInfo = playerInfoOptional.get();
