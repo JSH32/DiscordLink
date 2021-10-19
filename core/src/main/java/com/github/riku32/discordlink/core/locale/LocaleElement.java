@@ -1,6 +1,6 @@
 package com.github.riku32.discordlink.core.locale;
 
-import com.github.riku32.discordlink.core.TextUtil;
+import com.github.riku32.discordlink.core.util.TextUtil;
 
 public class LocaleElement {
     private String string;

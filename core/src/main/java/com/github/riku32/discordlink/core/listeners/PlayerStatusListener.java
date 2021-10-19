@@ -1,0 +1,248 @@
+package com.github.riku32.discordlink.core.listeners;
+
+import com.github.riku32.discordlink.core.Config;
+import com.github.riku32.discordlink.core.Constants;
+import com.github.riku32.discordlink.core.DiscordLink;
+import com.github.riku32.discordlink.core.framework.PlatformPlugin;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
+import com.github.riku32.discordlink.core.util.SkinUtil;
+import com.github.riku32.discordlink.core.util.TextUtil;
+import com.github.riku32.discordlink.core.bot.Bot;
+import com.github.riku32.discordlink.core.database.DataException;
+import com.github.riku32.discordlink.core.database.managers.PlayerManager;
+import com.github.riku32.discordlink.core.database.model.PlayerIdentity;
+import com.github.riku32.discordlink.core.database.model.PlayerInfo;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.dependency.annotation.Dependency;
+import com.github.riku32.discordlink.core.framework.eventbus.annotation.EventHandler;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEvent;
+import com.github.riku32.discordlink.core.framework.GameMode;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
+import com.github.riku32.discordlink.core.locale.Locale;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
+
+import java.util.Optional;
+import java.util.Set;
+
+public class PlayerStatusListener {
+    @Dependency
+    private PlatformPlugin platform;
+
+    @Dependency
+    private Config config;
+
+    @Dependency
+    private PlayerManager playerManager;
+
+    @Dependency
+    private Locale locale;
+
+    @Dependency
+    private Bot bot;
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Dependency(named = "frozenPlayers")
+    private Set<PlatformPlayer> frozenPlayers;
+
+    @EventHandler
+    private void onPlayerJoin(PlayerJoinEvent event) throws DataException {
+        if (config.isStatusEnabled()) event.setJoinMessage(null);
+
+        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
+        if (playerInfoOptional.isEmpty()) {
+            if (config.isLinkRequired()) {
+                event.getPlayer().sendMessage(locale.getElement("join.unregistered").info());
+                event.getPlayer().setGameMode(GameMode.SPECTATOR);
+                frozenPlayers.add(event.getPlayer());
+            }
+        } else if (!playerInfoOptional.get().isVerified()) {
+            bot.getJda().retrieveUserById((playerInfoOptional.get().getDiscordID())).queue(user -> {
+                event.getPlayer().sendMessage(TextUtil.colorize(locale.getElement("join.verify_link")
+                                .set("user_tag", user.getAsTag())
+                                .set("bot_tag", bot.getJda().getSelfUser().getAsTag())
+                                .info()));
+
+                if (config.isLinkRequired()) {
+                    frozenPlayers.add(event.getPlayer());
+                    event.getPlayer().setGameMode(GameMode.SPECTATOR);
+                }
+            }, ignored -> {
+                // User is invalid/left before verification, just remove the data that was leftover
+                try {
+                    playerManager.deletePlayer(PlayerIdentity.from(event.getPlayer().getUuid()));
+                } catch (DataException exception) {
+                    exception.printStackTrace();
+                }
+            });
+        }
+
+        // If player is not linked
+        if (playerInfoOptional.isEmpty() || !playerInfoOptional.get().isVerified()) {
+            if (config.isLinkRequired()) return;
+
+            if (config.isChannelBroadcastJoin()) {
+                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                        .setColor(Constants.Colors.SUCCESS)
+                        .setAuthor(event.getPlayer().getName() + " has joined", null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
+                        .build())
+                        .queue();
+            }
+
+            if (config.isStatusEnabled()) {
+                String joinMessage = TextUtil.colorize(config.getStatusJoinUnlinked()
+                        .replaceAll("%username%", event.getPlayer().getName()));
+                event.setJoinMessage(joinMessage);
+            }
+
+            return;
+        }
+
+        bot.getJda().retrieveUserById((playerInfoOptional.get().getDiscordID())).queue(user -> {
+            Guild guild = bot.getGuild();
+            guild.retrieveMemberById(playerInfoOptional.get().getDiscordID()).queue(
+                member -> {
+                    if (config.isStatusEnabled()) {
+                        platform.broadcast(TextUtil.colorize(config.getStatusJoinLinked()
+                                .replaceAll("%color%", member.getColor() != null ?
+                                        TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
+                                .replaceAll("%username%", event.getPlayer().getName())
+                                .replaceAll("%tag%", user.getAsTag()))));
+                    }
+
+                    event.getPlayer().setGameMode(platform.getDefaultGameMode());
+
+                    if (config.isChannelBroadcastJoin()) {
+                        bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                                .setColor(Constants.Colors.SUCCESS)
+                                .setAuthor(String.format("%s (%s) has joined", event.getPlayer().getName(), user.getAsTag()),
+                                        null, user.getAvatarUrl())
+                                .build())
+                                .queue();
+                    }
+                },
+                ignored -> {
+                    if (config.isAllowUnlink()) {
+                        try {
+                            playerManager.deletePlayer(PlayerIdentity.from(event.getPlayer().getUuid()));
+                        } catch (DataException exception) {
+                            exception.printStackTrace();
+                            return;
+                        }
+
+                        event.getPlayer().sendMessage(locale.getElement("join.left_server").error());
+
+                        if (config.isLinkRequired()) {
+                            frozenPlayers.add(event.getPlayer());
+                            event.getPlayer().setGameMode(GameMode.SPECTATOR);
+                            event.getPlayer().sendMessage(locale.getElement("link.link").info());
+                        }
+
+                        return;
+                    }
+
+                    event.getPlayer().kickPlayer(TextUtil.colorize(
+                            config.getKickNotInGuild().replaceAll("%tag%", user.getAsTag())));
+                }
+            );
+        });
+    }
+
+    @EventHandler
+    private void onPlayerQuit(PlayerQuitEvent event) throws DataException {
+        frozenPlayers.remove(event.getPlayer());
+
+        // Do not send default leave message
+        if (config.isStatusEnabled()) event.setQuitMessage(null);
+
+        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
+        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
+            PlayerInfo playerInfo = playerInfoOptional.get();
+            bot.getGuild().retrieveMemberById(playerInfo.getDiscordID()).queue(member -> {
+                if (config.isStatusEnabled()) {
+                    platform.broadcast(TextUtil.colorize(
+                            config.getStatusQuitLinked()
+                                    .replaceAll("%color%", member.getColor() != null ?
+                                            TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
+                                    .replaceAll("%username%", event.getPlayer().getName())
+                                    .replaceAll("%tag%", member.getUser().getAsTag()))
+                    ));
+                }
+
+                if (config.isChannelBroadcastQuit()) {
+                    bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                            .setColor(Constants.Colors.FAIL)
+                            .setAuthor(String.format("%s (%s) has left", event.getPlayer().getName(), member.getUser().getAsTag()),
+                                    null, member.getUser().getAvatarUrl())
+                            .build())
+                            .queue();
+                }
+            });
+        } else if (!config.isLinkRequired()) {
+            if (config.isStatusEnabled()) {
+                event.setQuitMessage(TextUtil.colorize(config.getStatusQuitUnlinked()
+                        .replaceAll("%username%", event.getPlayer().getName())));
+            }
+
+            if (config.isChannelBroadcastQuit()) {
+                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                        .setColor(Constants.Colors.FAIL)
+                        .setAuthor(String.format("%s has left", event.getPlayer().getName()), null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
+                        .build())
+                        .queue();
+            }
+        }
+    }
+
+    @EventHandler
+    private void onPlayerDeath(PlayerDeathEvent event) throws DataException {
+        if (config.isStatusEnabled()) event.setDeathMessage(null);
+
+        final String causeWithoutName;
+        if (event.getDeathMessage() == null)
+            causeWithoutName = "died";
+        else
+            causeWithoutName = event.getDeathMessage().substring(event.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
+
+        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
+        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
+            bot.getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
+                // Send custom death message if status is enabled, else handle normally
+                if (config.isStatusEnabled()) {
+                    platform.broadcast(TextUtil.colorize(
+                            config.getStatusDeathLinked()
+                                    .replaceAll("%color%", member.getColor() != null ?
+                                            TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
+                                    .replaceAll("%username%", event.getPlayer().getName())
+                                    .replaceAll("%tag%", member.getUser().getAsTag())
+                                    .replaceAll("%cause%", causeWithoutName))));
+                }
+
+                if (config.isChannelBroadcastDeath()) {
+                    bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                            .setColor(Constants.Colors.FAIL)
+                            .setAuthor(String.format("%s (%s) %s", event.getPlayer().getName(), member.getUser().getAsTag(), causeWithoutName),
+                                    null, member.getUser().getAvatarUrl())
+                            .build())
+                            .queue();
+                }
+            });
+        } else if (!config.isLinkRequired()) {
+            if (config.isStatusEnabled()) {
+                event.setDeathMessage(TextUtil.colorize(
+                        config.getStatusDeathUnlinked()
+                                .replaceAll("%username%", event.getPlayer().getName())
+                                .replaceAll("%cause%", causeWithoutName)));
+            }
+
+            if (config.isChannelBroadcastDeath()) {
+                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                        .setColor(Constants.Colors.FAIL)
+                        .setAuthor(String.format("%s %s", event.getPlayer().getName(), causeWithoutName), null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
+                        .build())
+                        .queue();
+            }
+        }
+    }
+}

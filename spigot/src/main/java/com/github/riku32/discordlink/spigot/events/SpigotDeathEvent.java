@@ -1,8 +1,7 @@
 package com.github.riku32.discordlink.spigot.events;
 
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.eventbus.events.PlayerDeathEvent;
-import com.github.riku32.discordlink.spigot.SpigotPlayer;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
 
 public class SpigotDeathEvent extends PlayerDeathEvent {
     private final org.bukkit.event.entity.PlayerDeathEvent deathEvent;

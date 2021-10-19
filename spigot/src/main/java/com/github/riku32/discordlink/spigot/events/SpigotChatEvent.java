@@ -1,7 +1,7 @@
 package com.github.riku32.discordlink.spigot.events;
 
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.eventbus.events.PlayerChatEvent;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerChatEvent;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.entity.Player;

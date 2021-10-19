@@ -12,7 +12,7 @@ commands:
     description: Access the DiscordLink plugin
     aliases: [discordlink, dl]
     permission: discord.use
-    permission-message: "You are lacking the permission node 'plots.use'"
+    permission-message: "You are lacking the permission node 'discord.use'"
 permissions:
   discord.use:
     default: true

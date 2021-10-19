@@ -1,16 +1,19 @@
 package com.github.riku32.discordlink.core;
 
 import com.github.riku32.discordlink.core.bot.Bot;
-import com.github.riku32.discordlink.core.commands.CommandFreeze;
-import com.github.riku32.discordlink.core.database.Database;
-import com.github.riku32.discordlink.core.eventbus.ListenerRegisterException;
-import com.github.riku32.discordlink.core.events.JoinEvent;
-import com.github.riku32.discordlink.core.events.MoveEvent;
+import com.github.riku32.discordlink.core.commands.CommandLink;
+import com.github.riku32.discordlink.core.database.managers.PlayerManager;
+import com.github.riku32.discordlink.core.database.sources.SqliteDB;
+import com.github.riku32.discordlink.core.framework.dependency.DependencyNotFoundException;
+import com.github.riku32.discordlink.core.framework.dependency.Injector;
+import com.github.riku32.discordlink.core.framework.eventbus.ListenerRegisterException;
+import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
+import com.github.riku32.discordlink.core.listeners.MoveListener;
 import com.github.riku32.discordlink.core.locale.Locale;
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.platform.PlatformPlugin;
-import com.github.riku32.discordlink.core.platform.command.CommandCompileException;
-import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.PlatformPlugin;
+import com.github.riku32.discordlink.core.framework.command.CommandCompileException;
+import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -23,7 +26,7 @@ import java.util.*;
 
 public class DiscordLink {
     private final PlatformPlugin plugin;
-    private Database database;
+    private SqliteDB sqliteDB;
     private Config config;
     private Locale locale;
     private Bot bot;
@@ -55,7 +58,7 @@ public class DiscordLink {
         }
 
         try {
-            database = new Database(plugin.getDataDirectory());
+            sqliteDB = new SqliteDB(plugin.getDataDirectory());
         } catch (SQLException e) {
             plugin.getLogger().severe("Unable to create/start the database");
             plugin.getLogger().severe(e.getMessage());
@@ -83,21 +86,43 @@ public class DiscordLink {
             return;
         }
 
+        Injector injector = new Injector();
+        injector.registerDependency(PlatformPlugin.class, this.plugin);
+        injector.registerNamedDependency("frozenPlayers", frozenPlayers);
+        injector.registerDependency(PlayerManager.class, sqliteDB);
+        injector.registerDependency(Config.class, config);
+        injector.registerDependency(Locale.class, locale);
+        injector.registerDependency(Bot.class, bot);
+
         try {
-            plugin.getEventBus().register(new JoinEvent(bot.getChannel()));
-            plugin.getEventBus().register(new MoveEvent(frozenPlayers));
-        } catch (ListenerRegisterException e) {
+            PlayerStatusListener playerStatusListener = new PlayerStatusListener();
+            injector.injectDependencies(playerStatusListener);
+
+            plugin.getEventBus().register(playerStatusListener);
+            plugin.getEventBus().register(new MoveListener(frozenPlayers));
+        } catch (ListenerRegisterException
+                | DependencyNotFoundException
+                | IllegalAccessException e) {
             e.printStackTrace();
             disable(false);
             return;
         }
 
         try {
-            plugin.registerCommand(new CompiledCommand(new CommandFreeze(frozenPlayers)));
-        } catch (CommandCompileException e) {
+            CommandLink commandLink = new CommandLink();
+            injector.injectDependencies(commandLink);
+
+            plugin.registerCommand(new CompiledCommand(commandLink));
+        } catch (CommandCompileException
+                | DependencyNotFoundException
+                | IllegalAccessException e) {
             e.printStackTrace();
             disable(false);
         }
+    }
+
+    public void broadcast(String message) {
+        plugin.broadcast(message);
     }
 
     /**
@@ -107,7 +132,7 @@ public class DiscordLink {
      */
     public void disable(boolean fromPluginShutdown) {
         if (bot != null) bot.shutdown();
-        if (database != null) database.close();
+        if (sqliteDB != null) sqliteDB.close();
 
         // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
         // This is to prevent a recursive loop of disable being called
@@ -122,8 +147,8 @@ public class DiscordLink {
         return config;
     }
 
-    public Database getDatabase() {
-        return database;
+    public SqliteDB getDatabase() {
+        return sqliteDB;
     }
 
     public PlatformPlugin getPlugin() {

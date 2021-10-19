@@ -1,6 +1,6 @@
 package com.github.riku32.discordlink.spigot.events;
 
-import com.github.riku32.discordlink.core.eventbus.EventBus;
+import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.spigot.PlayerRegistry;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

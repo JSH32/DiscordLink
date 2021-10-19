@@ -1,10 +1,11 @@
 package com.github.riku32.discordlink.spigot;
 
 import com.github.riku32.discordlink.core.DiscordLink;
-import com.github.riku32.discordlink.core.eventbus.EventBus;
-import com.github.riku32.discordlink.core.platform.PlatformPlugin;
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
+import com.github.riku32.discordlink.core.framework.GameMode;
+import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
+import com.github.riku32.discordlink.core.framework.PlatformPlugin;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
 import com.github.riku32.discordlink.spigot.events.MainListener;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -18,6 +19,8 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugin {
+    public static DiscordLinkSpigot INSTANCE;
+
     private DiscordLink discordLink;
     private EventBus eventBus;
     private SpigotCommand commandManager;
@@ -25,6 +28,8 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
 
     @Override
     public void onEnable() {
+        INSTANCE = this;
+
         this.playerRegistry = new PlayerRegistry();
         getServer().getPluginManager().registerEvents(playerRegistry, this);
 
@@ -86,5 +91,27 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
     @Override
     public void registerCommand(CompiledCommand compiledCommand) {
         this.commandManager.addCommand(compiledCommand);
+    }
+
+    @Override
+    public void broadcast(String message) {
+        Bukkit.broadcastMessage(message);
+    }
+
+    @Override
+    public GameMode getDefaultGameMode() {
+        switch (getServer().getDefaultGameMode()) {
+            case CREATIVE:
+                return GameMode.CREATIVE;
+            case SURVIVAL:
+                return GameMode.SURVIVAL;
+            case ADVENTURE:
+                return GameMode.ADVENTURE;
+            case SPECTATOR:
+                return GameMode.SPECTATOR;
+        }
+
+        // Shouldn't even be possible
+        return null;
     }
 }

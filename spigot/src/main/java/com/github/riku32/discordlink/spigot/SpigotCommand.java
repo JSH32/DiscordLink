@@ -1,10 +1,10 @@
 package com.github.riku32.discordlink.spigot;
 
 import com.github.riku32.discordlink.core.locale.Locale;
-import com.github.riku32.discordlink.core.platform.PlatformPlayer;
-import com.github.riku32.discordlink.core.platform.command.ArgumentData;
-import com.github.riku32.discordlink.core.platform.command.CommandData;
-import com.github.riku32.discordlink.core.platform.command.CompiledCommand;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.command.ArgumentData;
+import com.github.riku32.discordlink.core.framework.command.CommandData;
+import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -40,9 +40,13 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command commandObj, @NotNull String label, @NotNull String[] args) {
-        Player bukkitPlayer = ((Player) commandSender).getPlayer();
-        com.github.riku32.discordlink.core.platform.command.CommandSender sender =
-                new com.github.riku32.discordlink.core.platform.command.CommandSender(bukkitPlayer != null ? playerRegistry.getPlayer(bukkitPlayer) : null, plugin);
+        Player bukkitPlayer = null;
+
+        if (commandSender instanceof Player)
+            bukkitPlayer = (Player) commandSender;
+
+        com.github.riku32.discordlink.core.framework.command.CommandSender sender =
+                new com.github.riku32.discordlink.core.framework.command.CommandSender(bukkitPlayer != null ? playerRegistry.getPlayer(bukkitPlayer) : null, plugin);
 
         if (args.length < 1) {
             sender.sendMessage(locale.getElement("command.version")
