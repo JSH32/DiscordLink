@@ -20,8 +20,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Optional;
 
 @Command(aliases = {"link"}, userOnly = true)

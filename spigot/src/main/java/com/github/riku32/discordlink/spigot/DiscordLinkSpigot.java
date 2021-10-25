@@ -114,4 +114,16 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
         // Shouldn't even be possible
         return null;
     }
+
+    @Override
+    public boolean isOnline(UUID uuid) {
+        Player player = Bukkit.getPlayer(uuid);
+        return player != null && player.isOnline();
+    }
+
+    @Override
+    public boolean isOnline(String name) {
+        Player player = Bukkit.getPlayer(name);
+        return player != null && player.isOnline();
+    }
 }

@@ -75,4 +75,14 @@ public interface PlatformPlugin {
      * @return game mode
      */
     GameMode getDefaultGameMode();
+
+    /**
+     * Check if a user is online based on their UUID
+     */
+    boolean isOnline(UUID uuid);
+
+    /**
+     * Check if a user is online based on their name
+     */
+    boolean isOnline(String name);
 }

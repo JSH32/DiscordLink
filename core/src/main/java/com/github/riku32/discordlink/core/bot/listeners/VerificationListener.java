@@ -1,11 +1,16 @@
 package com.github.riku32.discordlink.core.bot.listeners;
 
+import com.github.riku32.discordlink.core.Constants;
+import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.database.DataException;
 import com.github.riku32.discordlink.core.database.managers.PlayerManager;
 import com.github.riku32.discordlink.core.database.model.PlayerIdentity;
 import com.github.riku32.discordlink.core.database.model.PlayerInfo;
-import net.dv8tion.jda.api.JDA;
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.util.MojangAPI;
+import com.github.riku32.discordlink.core.util.TextUtil;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -18,11 +23,14 @@ import java.util.stream.Collectors;
 
 public class VerificationListener extends ListenerAdapter {
     private final Bot bot;
+    private final DiscordLink plugin;
     private final PlayerManager playerManager;
+    private final MojangAPI mojangAPI = new MojangAPI();
 
-    public VerificationListener(Bot bot, PlayerManager playerManager) {
+    public VerificationListener(Bot bot, DiscordLink plugin) {
         this.bot = bot;
-        this.playerManager = playerManager;
+        this.plugin = plugin;
+        this.playerManager = plugin.getDatabase();
     }
 
     public void onButtonClick(ButtonClickEvent event) {
@@ -64,7 +72,72 @@ public class VerificationListener extends ListenerAdapter {
                 return;
             }
 
+            mojangAPI.getName(playerInfo.getUuid(), name -> {
+                switch (event.getComponentId()) {
+                    case "link.verify": {
+                        event.replyEmbeds(new EmbedBuilder()
+                                .setTitle("Linked")
+                                .setDescription(String.format("Your discord account has been linked to %s", name))
+                                .setColor(Constants.Colors.SUCCESS)
+                                .build()).queue();
 
+                        try {
+                            playerManager.verifyPlayer(PlayerIdentity.from(playerInfo.getUuid()));
+                        } catch (DataException exception) {
+                            exception.printStackTrace();
+                        }
+
+                        PlatformPlayer player = plugin.getPlugin().getPlayer(playerInfo.getUuid());
+                        if (player != null) {
+                            player.sendMessage(TextUtil.colorize(String.format("&7Your minecraft account has been linked to &e%s", event.getUser().getAsTag())));
+
+                            plugin.getFrozenPlayers().remove(player);
+
+                            if (plugin.getConfig().isLinkRequired()) {
+                                if (plugin.getConfig().isStatusEnabled()) {
+                                    plugin.getPlugin().broadcast(TextUtil.colorize(plugin.getConfig().getStatusJoinLinked()
+                                            .replaceAll("%username%", name)
+                                            .replaceAll("%tag%", event.getUser().getAsTag())
+                                            .replaceAll("%color%", member.getColor() != null ?
+                                                    TextUtil.colorToChatString(member.getColor()) : "&7")));
+                                }
+
+                                if (plugin.getConfig().isCrossChatEnabled()) {
+                                    if (bot.getChannel() != null)
+                                        bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                                                        .setColor(Constants.Colors.SUCCESS)
+                                                        .setAuthor(String.format("%s (%s) has joined", player.getName(), event.getUser().getAsTag()),
+                                                                null, event.getUser().getAvatarUrl())
+                                                        .build())
+                                                .queue();
+                                }
+
+                                player.setGameMode(plugin.getPlugin().getDefaultGameMode());
+                            }
+                        }
+
+                        break;
+                    }
+                    case "link.cancel": {
+                        event.replyEmbeds(new EmbedBuilder()
+                                .setTitle("Cancelled")
+                                .setDescription("You have cancelled the linking process")
+                                .setColor(Constants.Colors.FAIL)
+                                .build()).queue();
+
+                        PlatformPlayer player = plugin.getPlugin().getPlayer(playerInfo.getUuid());
+                        if (player != null) {
+                            player.sendMessage(TextUtil.colorize(String.format("&e%s&7 has cancelled the linking process", event.getUser().getAsTag())));
+                        }
+
+                        try {
+                            playerManager.deletePlayer(PlayerIdentity.from(playerInfo.getUuid()));
+                        } catch (DataException exception) {
+                            exception.printStackTrace();
+                        }
+                    }
+                }
+            }, null);
         });
     }
 }

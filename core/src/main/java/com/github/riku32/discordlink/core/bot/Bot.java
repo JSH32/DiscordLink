@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.core.bot;
 
 import com.github.riku32.discordlink.core.DiscordLink;
+import com.github.riku32.discordlink.core.bot.listeners.VerificationListener;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.neovisionaries.ws.client.DualStackMode;
 import com.neovisionaries.ws.client.WebSocketFactory;
@@ -51,6 +52,7 @@ public class Bot {
                     .setRateLimitPool(rateLimitThreadPool, true)
                     .setAutoReconnect(true)
                     .setBulkDeleteSplittingEnabled(false)
+                    .addEventListeners(new VerificationListener(this, discordLink))
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.DIRECT_MESSAGE_REACTIONS,
                             GatewayIntent.DIRECT_MESSAGES)

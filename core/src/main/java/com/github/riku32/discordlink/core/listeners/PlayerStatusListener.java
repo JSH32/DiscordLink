@@ -2,7 +2,6 @@ package com.github.riku32.discordlink.core.listeners;
 
 import com.github.riku32.discordlink.core.Config;
 import com.github.riku32.discordlink.core.Constants;
-import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
 import com.github.riku32.discordlink.core.util.SkinUtil;
@@ -21,7 +20,6 @@ import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEv
 import com.github.riku32.discordlink.core.locale.Locale;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.Optional;
 import java.util.Set;
@@ -105,10 +103,10 @@ public class PlayerStatusListener {
                 member -> {
                     if (config.isStatusEnabled()) {
                         platform.broadcast(TextUtil.colorize(config.getStatusJoinLinked()
-                                .replaceAll("%color%", member.getColor() != null ?
-                                        TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
                                 .replaceAll("%username%", event.getPlayer().getName())
-                                .replaceAll("%tag%", user.getAsTag()))));
+                                .replaceAll("%tag%", user.getAsTag()))
+                                .replaceAll("%color%", member.getColor() != null ?
+                                        TextUtil.colorToChatString(member.getColor()) : "&7"));
                     }
 
                     event.getPlayer().setGameMode(platform.getDefaultGameMode());
@@ -163,10 +161,10 @@ public class PlayerStatusListener {
                 if (config.isStatusEnabled()) {
                     platform.broadcast(TextUtil.colorize(
                             config.getStatusQuitLinked()
-                                    .replaceAll("%color%", member.getColor() != null ?
-                                            TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
                                     .replaceAll("%username%", event.getPlayer().getName())
-                                    .replaceAll("%tag%", member.getUser().getAsTag()))
+                                    .replaceAll("%tag%", member.getUser().getAsTag())
+                                    .replaceAll("%color%", member.getColor() != null ?
+                                            TextUtil.colorToChatString(member.getColor()) : "&7")
                     ));
                 }
 
@@ -197,13 +195,15 @@ public class PlayerStatusListener {
 
     @EventHandler
     private void onPlayerDeath(PlayerDeathEvent event) throws DataException {
-        if (config.isStatusEnabled()) event.setDeathMessage(null);
-
         final String causeWithoutName;
         if (event.getDeathMessage() == null)
             causeWithoutName = "died";
         else
             causeWithoutName = event.getDeathMessage().substring(event.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
+
+        // Disable default event if status broadcast is enabled
+        if (config.isStatusEnabled())
+            event.setDeathMessage(null);
 
         Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
         if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
@@ -212,11 +212,11 @@ public class PlayerStatusListener {
                 if (config.isStatusEnabled()) {
                     platform.broadcast(TextUtil.colorize(
                             config.getStatusDeathLinked()
-                                    .replaceAll("%color%", member.getColor() != null ?
-                                            TextUtil.colorToChatString(member.getColor()) : TextUtil.colorize("&7")
                                     .replaceAll("%username%", event.getPlayer().getName())
                                     .replaceAll("%tag%", member.getUser().getAsTag())
-                                    .replaceAll("%cause%", causeWithoutName))));
+                                    .replaceAll("%cause%", causeWithoutName))
+                                    .replaceAll("%color%", member.getColor() != null ?
+                                            TextUtil.colorToChatString(member.getColor()) : "&7"));
                 }
 
                 if (config.isChannelBroadcastDeath()) {

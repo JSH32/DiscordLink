@@ -14,6 +14,7 @@ import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CommandCompileException;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.github.riku32.discordlink.core.util.MojangAPI;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -153,5 +154,9 @@ public class DiscordLink {
 
     public PlatformPlugin getPlugin() {
         return plugin;
+    }
+
+    public Set<PlatformPlayer> getFrozenPlayers() {
+        return frozenPlayers;
     }
 }
