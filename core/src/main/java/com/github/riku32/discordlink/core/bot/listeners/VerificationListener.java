@@ -43,26 +43,27 @@ public class VerificationListener extends ListenerAdapter {
                     .setActionRows(ActionRow.of(event.getMessage().getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())
                     )).build()).queue();
 
-            Optional<PlayerInfo> optionalPlayerInfo;
+            PlayerInfo playerInfo;
             try {
-                optionalPlayerInfo = playerManager.getPlayerInfo(PlayerIdentity.from(event.getUser().getId()));
+                var optionalPlayerInfo = playerManager.getPlayerInfo(PlayerIdentity.from(event.getUser().getId()));
+
+                // If the player didn't exist or was verified then something weird happened
+                // Just acknowledge the interaction and ignore since the ActionRows already greyed
+                if (optionalPlayerInfo.isEmpty()) {
+                    event.deferEdit().queue();
+                    return;
+                }
+
+                playerInfo = optionalPlayerInfo.get();
+                if (playerInfo.isVerified()) {
+                    event.deferEdit().queue();
+                    return;
+                }
             } catch (DataException exception) {
                 exception.printStackTrace();
                 return;
             }
 
-            // If the player didn't exist or was verified then something weird happened
-            // Just acknowledge the interaction and ignore since the ActionRows already greyed
-            if (optionalPlayerInfo.isEmpty()) {
-                event.deferEdit().queue();
-                return;
-            }
-
-            PlayerInfo playerInfo = optionalPlayerInfo.get();
-            if (playerInfo.isVerified()) {
-                event.deferEdit().queue();
-                return;
-            }
 
             try {
                 if (!playerManager.getVerificationMessage(PlayerIdentity.from(playerInfo.getDiscordID())).equals(event.getMessageId()))
@@ -126,9 +127,8 @@ public class VerificationListener extends ListenerAdapter {
                                 .build()).queue();
 
                         PlatformPlayer player = plugin.getPlugin().getPlayer(playerInfo.getUuid());
-                        if (player != null) {
+                        if (player != null)
                             player.sendMessage(TextUtil.colorize(String.format("&e%s&7 has cancelled the linking process", event.getUser().getAsTag())));
-                        }
 
                         try {
                             playerManager.deletePlayer(PlayerIdentity.from(playerInfo.getUuid()));

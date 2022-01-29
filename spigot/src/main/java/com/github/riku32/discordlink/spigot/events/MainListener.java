@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
+import com.github.riku32.discordlink.core.framework.eventbus.exceptions.EventPostException;
 import com.github.riku32.discordlink.spigot.PlayerRegistry;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,27 +21,27 @@ public class MainListener implements Listener {
     }
 
     @EventHandler
-    private void onPlayerChat(AsyncPlayerChatEvent chatEvent) {
+    private void onPlayerChat(AsyncPlayerChatEvent chatEvent) throws EventPostException {
         eventBus.post(new SpigotChatEvent(chatEvent, playerRegistry.getPlayer(chatEvent.getPlayer())));
     }
 
     @EventHandler
-    private void onPlayerDeath(PlayerDeathEvent deathEvent) {
+    private void onPlayerDeath(PlayerDeathEvent deathEvent) throws EventPostException {
         eventBus.post(new SpigotDeathEvent(deathEvent, playerRegistry.getPlayer(deathEvent.getEntity())));
     }
 
     @EventHandler
-    private void onPlayerJoin(PlayerJoinEvent joinEvent) {
+    private void onPlayerJoin(PlayerJoinEvent joinEvent) throws EventPostException {
         eventBus.post(new SpigotJoinEvent(joinEvent, playerRegistry.getPlayer(joinEvent.getPlayer())));
     }
 
     @EventHandler
-    private void onPlayerMove(PlayerMoveEvent moveEvent) {
+    private void onPlayerMove(PlayerMoveEvent moveEvent) throws EventPostException {
         eventBus.post(new SpigotMoveEvent(moveEvent, playerRegistry.getPlayer(moveEvent.getPlayer())));
     }
 
     @EventHandler
-    private void onPlayerQuit(PlayerQuitEvent quitEvent) {
+    private void onPlayerQuit(PlayerQuitEvent quitEvent) throws EventPostException {
         eventBus.post(new SpigotQuitEvent(quitEvent, playerRegistry.getPlayer(quitEvent.getPlayer())));
     }
 }
