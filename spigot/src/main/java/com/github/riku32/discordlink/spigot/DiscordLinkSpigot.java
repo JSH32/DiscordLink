@@ -33,7 +33,7 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
         this.playerRegistry = new PlayerRegistry();
         getServer().getPluginManager().registerEvents(playerRegistry, this);
 
-        this.eventBus = new EventBus(getLogger());
+        this.eventBus = new EventBus();
         getServer().getPluginManager().registerEvents(new MainListener(eventBus, playerRegistry), this);
 
         this.commandManager = new SpigotCommand(this, playerRegistry);

@@ -2,24 +2,20 @@ package com.github.riku32.discordlink.core.framework.eventbus;
 
 import com.github.riku32.discordlink.core.framework.eventbus.annotation.EventHandler;
 import com.github.riku32.discordlink.core.framework.eventbus.events.Event;
+import com.github.riku32.discordlink.core.framework.eventbus.exceptions.EventPostException;
+import com.github.riku32.discordlink.core.framework.eventbus.exceptions.ListenerRegisterException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 // TODO: Add priority to event listeners
 public class EventBus {
     private final Map<Class<?>, Set<InstancedMethod>> subscribers = new IdentityHashMap<>();
-    private final Logger logger;
 
-    public EventBus(Logger logger) {
-        this.logger = logger;
-    }
-
-    public <T extends Event> void post(T event) {
+    public <T extends Event> void post(T event) throws EventPostException {
         Set<InstancedMethod> methods = subscribers.keySet().stream()
                 .filter(key -> key.isAssignableFrom(event.getClass()))
                 .map(subscribers::get)
@@ -31,10 +27,10 @@ public class EventBus {
             try {
                 method.invoke(event);
             } catch (InvocationTargetException | IllegalAccessException e) {
-                logger.severe(String.format("Unable to call handler %s on %s",
+                throw new EventPostException(String.format("Unable to call handler %s on %s\nError: %s",
                         method.getMethod().getName(),
-                        method.getObject().getClass().getName()));
-                logger.severe(ExceptionUtils.getStackTrace(e));
+                        method.getObject().getClass().getName(),
+                        ExceptionUtils.getStackTrace(e)));
             }
         }
     }
