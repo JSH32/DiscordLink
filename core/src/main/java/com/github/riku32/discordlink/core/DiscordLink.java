@@ -4,17 +4,13 @@ import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
 import com.github.riku32.discordlink.core.database.managers.PlayerManager;
 import com.github.riku32.discordlink.core.database.sources.SqliteDB;
-import com.github.riku32.discordlink.core.framework.dependency.DependencyNotFoundException;
 import com.github.riku32.discordlink.core.framework.dependency.Injector;
-import com.github.riku32.discordlink.core.framework.eventbus.ListenerRegisterException;
 import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
 import com.github.riku32.discordlink.core.listeners.MoveListener;
 import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
-import com.github.riku32.discordlink.core.framework.command.CommandCompileException;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
-import com.github.riku32.discordlink.core.util.MojangAPI;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -24,8 +20,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class DiscordLink {
+    public static Logger logger;
+
     private final PlatformPlugin plugin;
     private SqliteDB sqliteDB;
     private Config config;
@@ -36,15 +35,16 @@ public class DiscordLink {
 
     public DiscordLink(PlatformPlugin plugin) {
         this.plugin = plugin;
+        DiscordLink.logger = plugin.getLogger();
 
         File configFile = new File(plugin.getDataDirectory(), "config.yml");
         if (!configFile.exists()) {
             try {
                 Files.copy(Path.of(Objects.requireNonNull(getClass().getResource("config.yml")).getPath()), configFile.toPath());
-                plugin.getLogger().severe("Created a new configuration file, please fill in the file");
+                logger.severe("Created a new configuration file, please fill in the file");
             } catch (IOException e) {
-                plugin.getLogger().severe("Unable to create configuration file");
-                plugin.getLogger().severe(e.getMessage());
+                logger.severe("Unable to create configuration file");
+                logger.severe(e.getMessage());
             }
             disable(false);
             return;
@@ -53,7 +53,7 @@ public class DiscordLink {
         try {
             this.config = new Config(new String(Files.readAllBytes(configFile.toPath())));
         } catch (NoSuchElementException | IOException e) {
-            plugin.getLogger().severe(e.getMessage());
+            logger.severe(e.getMessage());
             disable(false);
             return;
         }
@@ -61,8 +61,8 @@ public class DiscordLink {
         try {
             sqliteDB = new SqliteDB(plugin.getDataDirectory());
         } catch (SQLException e) {
-            plugin.getLogger().severe("Unable to create/start the database");
-            plugin.getLogger().severe(e.getMessage());
+            logger.severe("Unable to create/start the database");
+            logger.severe(e.getMessage());
             disable(false);
             return;
         }
