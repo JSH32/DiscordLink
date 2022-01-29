@@ -87,23 +87,15 @@ public class DiscordLink {
             return;
         }
 
-        Injector injector = new Injector();
-        injector.registerDependency(PlatformPlugin.class, this.plugin);
-        injector.registerNamedDependency("frozenPlayers", frozenPlayers);
-        injector.registerDependency(PlayerManager.class, sqliteDB);
-        injector.registerDependency(Config.class, config);
-        injector.registerDependency(Locale.class, locale);
-        injector.registerDependency(Bot.class, bot);
+        Injector injector = createInjector();
 
         try {
             PlayerStatusListener playerStatusListener = new PlayerStatusListener();
             injector.injectDependencies(playerStatusListener);
-
             plugin.getEventBus().register(playerStatusListener);
+
             plugin.getEventBus().register(new MoveListener(frozenPlayers));
-        } catch (ListenerRegisterException
-                | DependencyNotFoundException
-                | IllegalAccessException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             disable(false);
             return;
@@ -114,12 +106,21 @@ public class DiscordLink {
             injector.injectDependencies(commandLink);
 
             plugin.registerCommand(new CompiledCommand(commandLink));
-        } catch (CommandCompileException
-                | DependencyNotFoundException
-                | IllegalAccessException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             disable(false);
         }
+    }
+
+    private Injector createInjector() {
+        Injector injector = new Injector();
+        injector.registerDependency(PlatformPlugin.class, this.plugin);
+        injector.registerNamedDependency("frozenPlayers", frozenPlayers);
+        injector.registerDependency(PlayerManager.class, sqliteDB);
+        injector.registerDependency(Config.class, config);
+        injector.registerDependency(Locale.class, locale);
+        injector.registerDependency(Bot.class, bot);
+        return injector;
     }
 
     public void broadcast(String message) {
