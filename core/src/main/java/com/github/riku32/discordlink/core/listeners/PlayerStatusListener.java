@@ -1,6 +1,6 @@
 package com.github.riku32.discordlink.core.listeners;
 
-import com.github.riku32.discordlink.core.Config;
+import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;

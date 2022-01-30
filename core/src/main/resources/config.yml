@@ -3,6 +3,35 @@ discord:
   server_id:
   owner_id:
 
+# Database settings, this specifies where your data is stored
+database:
+  # The method of storing data, the database type
+  # - Possible options:
+  #   | Remote databases - require connection information to be configured below
+  #   | => MySQL
+  #   | => PostgreSQL
+  #
+  #   | Flat file/local database - don't require any extra configuration
+  #   | => H2 (preferred over SQLite)
+  #   | => SQLite
+  method: h2
+
+  # These options are only used if you use Remote databases
+  # If you use flat file then these options do not matter
+  connection-options:
+    # Define the address and port for the database.
+    # - The standard DB engine port is used by default
+    #   (MySQL: 3306, PostgreSQL: 5432)
+    # - Specify as "host:port" if differs
+    address: localhost
+
+    # Name of the database to use
+    name: discordlink
+
+    # Credentials for the database.
+    username: root
+    password: ''
+
 link:
   # Requires link to play on the server
   required: false
@@ -61,7 +90,7 @@ chat:
     webhook:
 
 # Hijack and control player status messages
-# If enabled these message wont be sent until the user has linked their account
+# If enabled these messages won't be sent until the user has linked their account
 # Unlinked format only required if link.required is set to false
 # tag and color variables are only valid in linked messages
 #

@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 /**
- * THIS CLASS SHOULD ONLY BE CALLED THROUGH GRADLE EXECUTION TASKS
+ * THIS CLASS SHOULD ONLY BE CALLED THROUGH GRADLE EXECUTION TASKS<br>
+ * TODO: Convert this to a gradle task with core as a dependency
  */
 public class GenerateDbMigration {
     /**
@@ -17,6 +18,7 @@ public class GenerateDbMigration {
         System.out.println("DiscordLink migration generator");
         DbMigration dbMigration = DbMigration.create();
         dbMigration.setPathToResources(Path.of(System.getProperty("user.dir") + "/src/main/resources").toAbsolutePath().toString());
+        dbMigration.addPlatform(Platform.SQLITE);
         dbMigration.addPlatform(Platform.H2);
         dbMigration.addPlatform(Platform.MYSQL);
         dbMigration.addPlatform(Platform.POSTGRES);

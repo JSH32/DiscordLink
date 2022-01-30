@@ -3,6 +3,11 @@ plugins {
 }
 
 dependencies {
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.3'
+    implementation 'mysql:mysql-connector-java:8.0.28'
+    implementation 'com.h2database:h2:2.1.210'
+    implementation 'org.postgresql:postgresql:42.3.1'
+
     implementation 'org.apache.commons:commons-lang3:3.12.0'
     implementation 'me.carleslc.Simple-YAML:Simple-Yaml:1.7.2'
     implementation 'com.google.guava:guava:30.1.1-jre'
@@ -16,7 +21,6 @@ dependencies {
     implementation 'io.ebean:ebean-ddl-generator:12.14.1'
     annotationProcessor 'io.ebean:querybean-generator:12.14.1'
 
-    implementation 'com.h2database:h2:2.1.210'
     implementation 'org.slf4j:slf4j-simple:2.0.0-alpha6'
 
     // Needed for db migration
@@ -28,7 +32,7 @@ dependencies {
 
 task createMigration(type: JavaExec) {
     group = 'Execution'
-    description = 'Run the main class with JavaExecTask'
+    description = 'Create a migration using current model data'
     classpath = sourceSets.main.runtimeClasspath
     main = 'com.github.riku32.discordlink.core.GenerateDbMigration'
 }

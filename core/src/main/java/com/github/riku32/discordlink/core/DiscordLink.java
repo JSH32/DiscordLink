@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.core;
 
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
+import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.framework.dependency.Injector;
 import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
@@ -17,7 +18,6 @@ import io.ebean.Transaction;
 import io.ebean.annotation.Platform;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
-import io.ebean.dbmigration.DbMigration;
 import io.ebean.migration.MigrationConfig;
 import io.ebean.migration.MigrationRunner;
 
@@ -120,8 +120,19 @@ public class DiscordLink {
 
     private Database databaseInit() {
         // We need to load the class here to be able to use it
+        // For some reason it does not work without this
         try {
-            Class.forName("org.h2.Driver");
+            switch (config.getDatabaseSettings().platform) {
+                case H2:
+                    Class.forName("org.h2.Driver");
+                    break;
+                case POSTGRES:
+                    Class.forName("org.postgresql.Driver");
+                    break;
+                case MYSQL:
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    break;
+            }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             return null;
@@ -129,15 +140,16 @@ public class DiscordLink {
 
         // Create Database configurations
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
-        dataSourceConfig.setDriver("org.h2.Driver");
-        dataSourceConfig.setUrl("jdbc:h2:file:" + new File(plugin.getDataDirectory(), "database").getAbsolutePath());
-        dataSourceConfig.setUsername("");
-        dataSourceConfig.setPassword("");
-        dataSourceConfig.setIsolationLevel(Transaction.SERIALIZABLE);
+        dataSourceConfig.setUrl(config.getDatabaseSettings().getConnectionUri(plugin.getDataDirectory(), "database"));
+        dataSourceConfig.setUsername(config.getDatabaseSettings().username);
+        dataSourceConfig.setPassword(config.getDatabaseSettings().password);
+
+        if (config.getDatabaseSettings().platform == Platform.SQLITE)
+            dataSourceConfig.setIsolationLevel(Transaction.SERIALIZABLE);
+
         DatabaseConfig dbConfig = new DatabaseConfig();
         dbConfig.setDataSourceConfig(dataSourceConfig);
         dbConfig.setDefaultServer(true);
-        dbConfig.setRunMigration(false);
         dbConfig.setClasses(ImmutableList.of(PlayerInfo.class));
 
         // Set the current class loader to the plugin class loader, so we can initialize the database
@@ -150,7 +162,7 @@ public class DiscordLink {
 
         // Run available migrations
         MigrationConfig migrationConfig = new MigrationConfig();
-        migrationConfig.setMigrationPath("classpath:/dbmigration/h2");
+        migrationConfig.setMigrationPath("classpath:/dbmigration/" + config.getDatabaseSettings().platform.toString().toLowerCase());
         migrationConfig.load(new Properties());
         MigrationRunner runner = new MigrationRunner(migrationConfig);
         runner.run(database.dataSource());
@@ -195,10 +207,6 @@ public class DiscordLink {
 
     public Config getConfig() {
         return config;
-    }
-
-    public Database getDatabase() {
-        return database;
     }
 
     public PlatformPlugin getPlugin() {

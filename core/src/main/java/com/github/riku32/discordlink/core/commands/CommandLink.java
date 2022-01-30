@@ -1,6 +1,6 @@
 package com.github.riku32.discordlink.core.commands;
 
-import com.github.riku32.discordlink.core.Config;
+import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.database.PlayerInfo;

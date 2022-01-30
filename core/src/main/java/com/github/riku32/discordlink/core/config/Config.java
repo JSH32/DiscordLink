@@ -1,4 +1,4 @@
-package com.github.riku32.discordlink.core;
+package com.github.riku32.discordlink.core.config;
 
 import org.simpleyaml.configuration.file.YamlFile;
 
@@ -49,6 +49,8 @@ public class Config {
     private final boolean verifySpawn;
     private final boolean allowUnlink;
 
+    private final DatabaseSettings databaseSettings;
+
     /**
      * Parse config file and turn into object
      *
@@ -60,6 +62,18 @@ public class Config {
         YamlFile configuration = YamlFile.loadConfiguration(stream);
         stream.close();
 
+        token = getAsStringNotNull(configuration, "discord.token");
+        serverID = getAsStringNotNull(configuration, "discord.server_id");
+        ownerID = getAsStringNotNull(configuration, "discord.owner_id");
+
+        databaseSettings = new DatabaseSettings(
+                getAsStringNotNull(configuration, "database.method").toLowerCase(),
+                getAsStringNotNull(configuration, "database.connection-options.address").toLowerCase(),
+                getAsStringNotNull(configuration, "database.connection-options.name").toLowerCase(),
+                getAsStringNotNull(configuration, "database.connection-options.username").toLowerCase(),
+                getAsStringNotNull(configuration, "database.connection-options.password").toLowerCase()
+        );
+
         linkRequired = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.required"));
         if (linkRequired) {
             verifySpawn = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.verify_spawn"));
@@ -67,10 +81,6 @@ public class Config {
             verifySpawn = false;
         }
         allowUnlink = Boolean.parseBoolean(getAsStringNotNull(configuration, "link.allow_unlink"));
-
-        token = getAsStringNotNull(configuration, "discord.token");
-        serverID = getAsStringNotNull(configuration, "discord.server_id");
-        ownerID = getAsStringNotNull(configuration, "discord.owner_id");
 
         if (Boolean.parseBoolean(getAsStringNotNull(configuration, "chat.enabled"))) {
             chatEnabled = true;
@@ -269,5 +279,9 @@ public class Config {
 
     public boolean isAllowUnlink() {
         return allowUnlink;
+    }
+
+    public DatabaseSettings getDatabaseSettings() {
+        return databaseSettings;
     }
 }
