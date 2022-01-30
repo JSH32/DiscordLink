@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<migration xmlns="http://ebean-orm.github.io/xml/ns/dbmigration">
+    <changeSet type="apply">
+        <createTable name="players" pkName="pk_players">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="uuid" type="uuid" notnull="true" unique="uq_players_uuid" comment="Mojang assigned UUID"/>
+            <column name="verified" type="boolean" defaultValue="false" notnull="true" comment="Weather the user has verified their discord account linkage"/>
+            <column name="discord_id" type="varchar" notnull="true" unique="uq_players_discord_id" comment="Discord snowflake ID"/>
+            <column name="verification_message_id" type="varchar" comment="ID of the discord message sent during verification"/>
+        </createTable>
+    </changeSet>
+</migration>
