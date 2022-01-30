@@ -2,8 +2,7 @@ package com.github.riku32.discordlink.core;
 
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
-import com.github.riku32.discordlink.core.database.managers.PlayerManager;
-import com.github.riku32.discordlink.core.database.sources.SqliteDB;
+import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.framework.dependency.Injector;
 import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
 import com.github.riku32.discordlink.core.listeners.MoveListener;
@@ -11,6 +10,16 @@ import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.google.common.collect.ImmutableList;
+import io.ebean.Database;
+import io.ebean.DatabaseFactory;
+import io.ebean.Transaction;
+import io.ebean.annotation.Platform;
+import io.ebean.config.DatabaseConfig;
+import io.ebean.datasource.DataSourceConfig;
+import io.ebean.dbmigration.DbMigration;
+import io.ebean.migration.MigrationConfig;
+import io.ebean.migration.MigrationRunner;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -18,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -26,7 +34,7 @@ public class DiscordLink {
     public static Logger logger;
 
     private final PlatformPlugin plugin;
-    private SqliteDB sqliteDB;
+    private Database database;
     private Config config;
     private Locale locale;
     private Bot bot;
@@ -59,15 +67,6 @@ public class DiscordLink {
         }
 
         try {
-            sqliteDB = new SqliteDB(plugin.getDataDirectory());
-        } catch (SQLException e) {
-            logger.severe("Unable to create/start the database");
-            logger.severe(e.getMessage());
-            disable(false);
-            return;
-        }
-
-        try {
             Properties prop = new Properties();
             InputStream localeStream = getClass().getClassLoader().getResourceAsStream("locale/en-US.properties");
             prop.load(localeStream);
@@ -75,6 +74,13 @@ public class DiscordLink {
             locale = new Locale(prop);
         } catch (Exception e) {
             e.printStackTrace();
+            disable(false);
+            return;
+        }
+
+        // Initialize database
+        database = databaseInit();
+        if (database == null) {
             disable(false);
             return;
         }
@@ -112,11 +118,53 @@ public class DiscordLink {
         }
     }
 
+    private Database databaseInit() {
+        // We need to load the class here to be able to use it
+        try {
+            Class.forName("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        // Create Database configurations
+        DataSourceConfig dataSourceConfig = new DataSourceConfig();
+        dataSourceConfig.setDriver("org.h2.Driver");
+        dataSourceConfig.setUrl("jdbc:h2:file:" + new File(plugin.getDataDirectory(), "database").getAbsolutePath());
+        dataSourceConfig.setUsername("");
+        dataSourceConfig.setPassword("");
+        dataSourceConfig.setIsolationLevel(Transaction.SERIALIZABLE);
+        DatabaseConfig dbConfig = new DatabaseConfig();
+        dbConfig.setDataSourceConfig(dataSourceConfig);
+        dbConfig.setDefaultServer(true);
+        dbConfig.setRunMigration(false);
+        dbConfig.setClasses(ImmutableList.of(PlayerInfo.class));
+
+        // Set the current class loader to the plugin class loader, so we can initialize the database
+        // This is a weird thing we need to do when using spigot specifically
+        ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(plugin.getClass().getClassLoader());
+
+        // Initialize the database
+        database = DatabaseFactory.create(dbConfig);
+
+        // Run available migrations
+        MigrationConfig migrationConfig = new MigrationConfig();
+        migrationConfig.setMigrationPath("classpath:/dbmigration/h2");
+        migrationConfig.load(new Properties());
+        MigrationRunner runner = new MigrationRunner(migrationConfig);
+        runner.run(database.dataSource());
+
+        // Set the original class loader back
+        Thread.currentThread().setContextClassLoader(previousClassLoader);
+
+        return database;
+    }
+
     private Injector createInjector() {
         Injector injector = new Injector();
         injector.registerDependency(PlatformPlugin.class, this.plugin);
         injector.registerNamedDependency("frozenPlayers", frozenPlayers);
-        injector.registerDependency(PlayerManager.class, sqliteDB);
         injector.registerDependency(Config.class, config);
         injector.registerDependency(Locale.class, locale);
         injector.registerDependency(Bot.class, bot);
@@ -134,7 +182,7 @@ public class DiscordLink {
      */
     public void disable(boolean fromPluginShutdown) {
         if (bot != null) bot.shutdown();
-        if (sqliteDB != null) sqliteDB.close();
+        if (database != null) database.shutdown();
 
         // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
         // This is to prevent a recursive loop of disable being called
@@ -149,8 +197,8 @@ public class DiscordLink {
         return config;
     }
 
-    public SqliteDB getDatabase() {
-        return sqliteDB;
+    public Database getDatabase() {
+        return database;
     }
 
     public PlatformPlugin getPlugin() {

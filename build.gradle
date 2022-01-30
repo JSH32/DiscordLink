@@ -12,6 +12,7 @@ subprojects {
     version = '1.2'
 
     repositories {
+        gradlePluginPortal()
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/groups/public' }
         maven { url 'https://jitpack.io' }

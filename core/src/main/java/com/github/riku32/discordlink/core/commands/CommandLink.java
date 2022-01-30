@@ -3,10 +3,7 @@ package com.github.riku32.discordlink.core.commands;
 import com.github.riku32.discordlink.core.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.bot.Bot;
-import com.github.riku32.discordlink.core.database.DataException;
-import com.github.riku32.discordlink.core.database.managers.PlayerManager;
-import com.github.riku32.discordlink.core.database.model.PlayerIdentity;
-import com.github.riku32.discordlink.core.database.model.PlayerInfo;
+import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.framework.command.CommandSender;
 import com.github.riku32.discordlink.core.framework.command.annotation.Command;
 import com.github.riku32.discordlink.core.framework.command.annotation.Default;
@@ -25,9 +22,6 @@ import java.util.Optional;
 @Command(aliases = {"link"}, userOnly = true)
 public class CommandLink {
     @Dependency
-    private PlayerManager playerManager;
-
-    @Dependency
     private Bot bot;
 
     @Dependency
@@ -37,13 +31,13 @@ public class CommandLink {
     private Locale locale;
 
     @Default
-    private boolean link(CommandSender sender, String tag) throws DataException {
-        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(sender.getPlayer().getUuid()));
+    private boolean link(CommandSender sender, String tag) {
+        Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(sender.getPlayer().getUuid());
         if (playerInfoOptional.isPresent()) {
             PlayerInfo playerInfo = playerInfoOptional.get();
 
-            bot.getJda().retrieveUserById(playerInfo.getDiscordID()).queue(user -> {
-                if (playerInfo.isVerified()) {
+            bot.getJda().retrieveUserById(playerInfo.discordId).queue(user -> {
+                if (playerInfo.verified) {
                     sender.sendMessage((config.isAllowUnlink() ?
                             locale.getElement("link.already_linked")
                             : locale.getElement("link.already_linked_unlink"))
@@ -67,11 +61,6 @@ public class CommandLink {
 
         if (member == null) {
             sender.sendMessage(locale.getElement("link.account_invalid").error());
-            return false;
-        }
-
-        if (playerManager.isPlayerLinked(PlayerIdentity.from(member.getId()))) {
-            sender.sendMessage(locale.getElement("link.linked").error());
             return false;
         }
 
@@ -100,11 +89,8 @@ public class CommandLink {
                         return;
                     }
 
-                    try {
-                        playerManager.createPlayer(sender.getUniqueId(), member.getId(), message.getId());
-                    } catch (DataException e) {
-                        e.printStackTrace();
-                    }
+                    // Create the player in database
+                    new PlayerInfo(sender.getUniqueId(), member.getId(), message.getId()).save();
 
                     sender.sendMessage(locale.getElement("link.verify").info());
                 });

@@ -7,10 +7,7 @@ import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathE
 import com.github.riku32.discordlink.core.util.SkinUtil;
 import com.github.riku32.discordlink.core.util.TextUtil;
 import com.github.riku32.discordlink.core.bot.Bot;
-import com.github.riku32.discordlink.core.database.DataException;
-import com.github.riku32.discordlink.core.database.managers.PlayerManager;
-import com.github.riku32.discordlink.core.database.model.PlayerIdentity;
-import com.github.riku32.discordlink.core.database.model.PlayerInfo;
+import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.dependency.annotation.Dependency;
 import com.github.riku32.discordlink.core.framework.eventbus.annotation.EventHandler;
@@ -32,9 +29,6 @@ public class PlayerStatusListener {
     private Config config;
 
     @Dependency
-    private PlayerManager playerManager;
-
-    @Dependency
     private Locale locale;
 
     @Dependency
@@ -45,18 +39,18 @@ public class PlayerStatusListener {
     private Set<PlatformPlayer> frozenPlayers;
 
     @EventHandler
-    private void onPlayerJoin(PlayerJoinEvent event) throws DataException {
+    private void onPlayerJoin(PlayerJoinEvent event) {
         if (config.isStatusEnabled()) event.setJoinMessage(null);
 
-        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
+        Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(event.getPlayer().getUuid());
         if (playerInfoOptional.isEmpty()) {
             if (config.isLinkRequired()) {
                 event.getPlayer().sendMessage(locale.getElement("join.unregistered").info());
                 event.getPlayer().setGameMode(GameMode.SPECTATOR);
                 frozenPlayers.add(event.getPlayer());
             }
-        } else if (!playerInfoOptional.get().isVerified()) {
-            bot.getJda().retrieveUserById((playerInfoOptional.get().getDiscordID())).queue(user -> {
+        } else if (!playerInfoOptional.get().verified) {
+            bot.getJda().retrieveUserById((playerInfoOptional.get().discordId)).queue(user -> {
                 event.getPlayer().sendMessage(TextUtil.colorize(locale.getElement("join.verify_link")
                                 .set("user_tag", user.getAsTag())
                                 .set("bot_tag", bot.getJda().getSelfUser().getAsTag())
@@ -68,16 +62,12 @@ public class PlayerStatusListener {
                 }
             }, ignored -> {
                 // User is invalid/left before verification, just remove the data that was leftover
-                try {
-                    playerManager.deletePlayer(PlayerIdentity.from(event.getPlayer().getUuid()));
-                } catch (DataException exception) {
-                    exception.printStackTrace();
-                }
+                playerInfoOptional.get().delete();
             });
         }
 
         // If player is not linked
-        if (playerInfoOptional.isEmpty() || !playerInfoOptional.get().isVerified()) {
+        if (playerInfoOptional.isEmpty() || !playerInfoOptional.get().verified) {
             if (config.isLinkRequired()) return;
 
             if (config.isChannelBroadcastJoin()) {
@@ -97,9 +87,9 @@ public class PlayerStatusListener {
             return;
         }
 
-        bot.getJda().retrieveUserById((playerInfoOptional.get().getDiscordID())).queue(user -> {
+        bot.getJda().retrieveUserById((playerInfoOptional.get().discordId)).queue(user -> {
             Guild guild = bot.getGuild();
-            guild.retrieveMemberById(playerInfoOptional.get().getDiscordID()).queue(
+            guild.retrieveMemberById(playerInfoOptional.get().discordId).queue(
                 member -> {
                     if (config.isStatusEnabled()) {
                         platform.broadcast(TextUtil.colorize(config.getStatusJoinLinked()
@@ -122,13 +112,7 @@ public class PlayerStatusListener {
                 },
                 ignored -> {
                     if (config.isAllowUnlink()) {
-                        try {
-                            playerManager.deletePlayer(PlayerIdentity.from(event.getPlayer().getUuid()));
-                        } catch (DataException exception) {
-                            exception.printStackTrace();
-                            return;
-                        }
-
+                        playerInfoOptional.get().delete();
                         event.getPlayer().sendMessage(locale.getElement("join.left_server").error());
 
                         if (config.isLinkRequired()) {
@@ -148,16 +132,16 @@ public class PlayerStatusListener {
     }
 
     @EventHandler
-    private void onPlayerQuit(PlayerQuitEvent event) throws DataException {
+    private void onPlayerQuit(PlayerQuitEvent event) {
         frozenPlayers.remove(event.getPlayer());
 
         // Do not send default leave message
         if (config.isStatusEnabled()) event.setQuitMessage(null);
 
-        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
-        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
+        Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(event.getPlayer().getUuid());
+        if (playerInfoOptional.isPresent() && playerInfoOptional.get().verified) {
             PlayerInfo playerInfo = playerInfoOptional.get();
-            bot.getGuild().retrieveMemberById(playerInfo.getDiscordID()).queue(member -> {
+            bot.getGuild().retrieveMemberById(playerInfo.discordId).queue(member -> {
                 if (config.isStatusEnabled()) {
                     platform.broadcast(TextUtil.colorize(
                             config.getStatusQuitLinked()
@@ -194,7 +178,7 @@ public class PlayerStatusListener {
     }
 
     @EventHandler
-    private void onPlayerDeath(PlayerDeathEvent event) throws DataException {
+    private void onPlayerDeath(PlayerDeathEvent event) {
         final String causeWithoutName;
         if (event.getDeathMessage() == null)
             causeWithoutName = "died";
@@ -205,9 +189,9 @@ public class PlayerStatusListener {
         if (config.isStatusEnabled())
             event.setDeathMessage(null);
 
-        Optional<PlayerInfo> playerInfoOptional = playerManager.getPlayerInfo(PlayerIdentity.from(event.getPlayer().getUuid()));
-        if (playerInfoOptional.isPresent() && playerInfoOptional.get().isVerified()) {
-            bot.getGuild().retrieveMemberById((playerInfoOptional.get().getDiscordID())).queue(member -> {
+        Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(event.getPlayer().getUuid());
+        if (playerInfoOptional.isPresent() && playerInfoOptional.get().verified) {
+            bot.getGuild().retrieveMemberById((playerInfoOptional.get().discordId)).queue(member -> {
                 // Send custom death message if status is enabled, else handle normally
                 if (config.isStatusEnabled()) {
                     platform.broadcast(TextUtil.colorize(
