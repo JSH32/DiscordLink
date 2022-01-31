@@ -34,6 +34,7 @@ public class CommandLink {
 
     @Default
     private boolean link(CommandSender sender, String tag) {
+        // Check if user is linked
         Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(sender.getPlayer().getUuid());
         if (playerInfoOptional.isPresent()) {
             PlayerInfo playerInfo = playerInfoOptional.get();
@@ -63,6 +64,12 @@ public class CommandLink {
 
         if (member == null) {
             sender.sendMessage(locale.getElement("link.account_invalid").error());
+            return false;
+        }
+
+        // Check if that discord account is already linked to another minecraft account
+        if (PlayerInfo.find.byDiscordIdOptional(member.getId()).isPresent()) {
+            sender.sendMessage(locale.getElement("link.discord_linked").error());
             return false;
         }
 
