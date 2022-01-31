@@ -22,7 +22,7 @@ public class PlayerInfo extends Model {
     public UUID uuid;
 
     @NotNull
-    @DbComment("Weather the user has verified their discord account linkage")
+    @DbComment("Whether the user has verified their discord account linkage")
     public boolean verified = false;
 
     @NotNull

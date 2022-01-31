@@ -4,7 +4,7 @@
         <createTable name="players" pkName="pk_players">
             <column name="id" type="bigint" primaryKey="true"/>
             <column name="uuid" type="uuid" notnull="true" unique="uq_players_uuid" comment="Mojang assigned UUID"/>
-            <column name="verified" type="boolean" defaultValue="false" notnull="true" comment="Weather the user has verified their discord account linkage"/>
+            <column name="verified" type="boolean" defaultValue="false" notnull="true" comment="Whether the user has verified their discord account linkage"/>
             <column name="discord_id" type="varchar" notnull="true" unique="uq_players_discord_id" comment="Discord snowflake ID"/>
         </createTable>
         <createTable name="verifications" pkName="pk_verifications">

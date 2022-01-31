@@ -2,7 +2,7 @@
 create table players (
   id                            bigint auto_increment not null,
   uuid                          varchar(40) not null comment 'Mojang assigned UUID',
-  verified                      tinyint(1) default 0 not null comment 'Weather the user has verified their discord account linkage',
+  verified                      tinyint(1) default 0 not null comment 'Whether the user has verified their discord account linkage',
   discord_id                    varchar(255) not null comment 'Discord snowflake ID',
   constraint uq_players_uuid unique (uuid),
   constraint uq_players_discord_id unique (discord_id),

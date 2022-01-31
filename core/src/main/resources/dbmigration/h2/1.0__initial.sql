@@ -9,7 +9,7 @@ create table players (
   constraint pk_players primary key (id)
 );
 comment on column players.uuid is 'Mojang assigned UUID';
-comment on column players.verified is 'Weather the user has verified their discord account linkage';
+comment on column players.verified is 'Whether the user has verified their discord account linkage';
 comment on column players.discord_id is 'Discord snowflake ID';
 
 create table verifications (
