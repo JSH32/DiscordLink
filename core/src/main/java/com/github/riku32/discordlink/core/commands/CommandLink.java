@@ -4,6 +4,8 @@ import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
+import com.github.riku32.discordlink.core.database.Verification;
+import com.github.riku32.discordlink.core.database.enums.VerificationType;
 import com.github.riku32.discordlink.core.framework.command.CommandSender;
 import com.github.riku32.discordlink.core.framework.command.annotation.Command;
 import com.github.riku32.discordlink.core.framework.command.annotation.Default;
@@ -89,8 +91,10 @@ public class CommandLink {
                         return;
                     }
 
-                    // Create the player in database
-                    new PlayerInfo(sender.getUniqueId(), member.getId(), message.getId()).save();
+                    // Create the player and a message verification in the database
+                    PlayerInfo playerInfo = new PlayerInfo(sender.getUniqueId(), member.getId());
+                    playerInfo.save();
+                    new Verification(playerInfo, VerificationType.MESSAGE_REACTION, message.getId()).save();
 
                     sender.sendMessage(locale.getElement("link.verify").info());
                 });

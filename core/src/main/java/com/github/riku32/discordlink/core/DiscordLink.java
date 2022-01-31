@@ -4,6 +4,7 @@ import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
 import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
+import com.github.riku32.discordlink.core.database.Verification;
 import com.github.riku32.discordlink.core.framework.dependency.Injector;
 import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
 import com.github.riku32.discordlink.core.listeners.MoveListener;
@@ -138,6 +139,7 @@ public class DiscordLink {
             return null;
         }
 
+
         // Create Database configurations
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setUrl(config.getDatabaseSettings().getConnectionUri(plugin.getDataDirectory(), "database"));
@@ -150,7 +152,7 @@ public class DiscordLink {
         DatabaseConfig dbConfig = new DatabaseConfig();
         dbConfig.setDataSourceConfig(dataSourceConfig);
         dbConfig.setDefaultServer(true);
-        dbConfig.setClasses(ImmutableList.of(PlayerInfo.class));
+        dbConfig.setClasses(ImmutableList.of(PlayerInfo.class, Verification.class));
 
         // Set the current class loader to the plugin class loader, so we can initialize the database
         // This is a weird thing we need to do when using spigot specifically

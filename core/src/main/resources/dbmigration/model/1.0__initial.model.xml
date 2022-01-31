@@ -6,7 +6,12 @@
             <column name="uuid" type="uuid" notnull="true" unique="uq_players_uuid" comment="Mojang assigned UUID"/>
             <column name="verified" type="boolean" defaultValue="false" notnull="true" comment="Weather the user has verified their discord account linkage"/>
             <column name="discord_id" type="varchar" notnull="true" unique="uq_players_discord_id" comment="Discord snowflake ID"/>
-            <column name="verification_message_id" type="varchar" comment="ID of the discord message sent during verification"/>
+        </createTable>
+        <createTable name="verifications" pkName="pk_verifications">
+            <column name="id" type="bigint" primaryKey="true"/>
+            <column name="player_id" type="bigint" notnull="true" uniqueOneToOne="uq_verifications_player_id" references="players.id" foreignKeyName="fk_verifications_player_id" foreignKeyOnDelete="CASCADE" foreignKeyOnUpdate="RESTRICT"/>
+            <column name="type" type="varchar(16)" checkConstraint="check ( type in ('message_reaction','code'))" checkConstraintName="ck_verifications_type" comment="Type of verification"/>
+            <column name="value" type="varchar" unique="uq_verifications_value" comment="Value of the verification, this is a messageId in message_reaction and a code in code"/>
         </createTable>
     </changeSet>
 </migration>

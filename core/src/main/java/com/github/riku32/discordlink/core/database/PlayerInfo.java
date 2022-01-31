@@ -4,7 +4,6 @@ import com.github.riku32.discordlink.core.database.finders.PlayerInfoFinder;
 import io.ebean.Model;
 import io.ebean.annotation.DbComment;
 import io.ebean.annotation.NotNull;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -31,17 +30,11 @@ public class PlayerInfo extends Model {
     @DbComment("Discord snowflake ID")
     public String discordId;
 
-    @Unique
-    @DbComment("ID of the discord message sent during verification")
-    public String verificationMessageId;
-
     public PlayerInfo(
             @org.jetbrains.annotations.NotNull UUID uuid,
-            @org.jetbrains.annotations.NotNull String discordId,
-            @org.jetbrains.annotations.NotNull String verificationMessageId) {
+            @org.jetbrains.annotations.NotNull String discordId) {
         this.uuid = uuid;
         this.discordId = discordId;
-        this.verificationMessageId = verificationMessageId;
     }
 
     public PlayerInfo setVerified(boolean verified) {

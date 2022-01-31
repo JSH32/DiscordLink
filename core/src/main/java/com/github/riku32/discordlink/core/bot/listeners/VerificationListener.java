@@ -3,7 +3,8 @@ package com.github.riku32.discordlink.core.bot.listeners;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.bot.Bot;
-import com.github.riku32.discordlink.core.database.PlayerInfo;
+import com.github.riku32.discordlink.core.database.Verification;
+import com.github.riku32.discordlink.core.database.enums.VerificationType;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.util.MojangAPI;
 import com.github.riku32.discordlink.core.util.TextUtil;
@@ -37,26 +38,29 @@ public class VerificationListener extends ListenerAdapter {
                     .setActionRows(ActionRow.of(event.getMessage().getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())
                     )).build()).queue();
 
-            PlayerInfo playerInfo;
-            var optionalPlayerInfo = PlayerInfo.find.byDiscordIdOptional(event.getUser().getId());
+            Verification verification;
+            var optionalVerification = Verification.find.byValueAndType(VerificationType.MESSAGE_REACTION, event.getMessageId());
 
             // If the player didn't exist or was verified then something weird happened
             // Just acknowledge the interaction and ignore since the ActionRows already greyed
-            if (optionalPlayerInfo.isEmpty()) {
+            if (optionalVerification.isEmpty()) {
                 event.deferEdit().queue();
                 return;
             }
 
-            playerInfo = optionalPlayerInfo.get();
-            if (playerInfo.verified) {
+            verification = optionalVerification.get();
+
+            // If the player was verified we should delete the verification, it should not exist
+            if (verification.player.verified) {
+                verification.delete();
                 event.deferEdit().queue();
                 return;
             }
 
-            if (!playerInfo.verificationMessageId.equals(event.getMessageId()))
+            if (!verification.value.equals(event.getMessageId()))
                 return;
 
-            mojangAPI.getName(playerInfo.uuid, name -> {
+            mojangAPI.getName(verification.player.uuid, name -> {
                 switch (event.getComponentId()) {
                     case "link.verify": {
                         event.replyEmbeds(new EmbedBuilder()
@@ -66,13 +70,14 @@ public class VerificationListener extends ListenerAdapter {
                                 .build()).queue();
 
                         // Verify the player
-                        playerInfo
+                        verification.player
                                 .setVerified(true)
                                 .save();
 
-                        PlatformPlayer player = plugin.getPlugin().getPlayer(playerInfo.uuid);
+                        PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
                         if (player != null) {
                             player.sendMessage(TextUtil.colorize(String.format("&7Your minecraft account has been linked to &e%s", event.getUser().getAsTag())));
+                            verification.delete(); // Delete the verification once we verify
 
                             plugin.getFrozenPlayers().remove(player);
 
@@ -108,11 +113,11 @@ public class VerificationListener extends ListenerAdapter {
                                 .setColor(Constants.Colors.FAIL)
                                 .build()).queue();
 
-                        PlatformPlayer player = plugin.getPlugin().getPlayer(playerInfo.uuid);
+                        PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
                         if (player != null)
                             player.sendMessage(TextUtil.colorize(String.format("&e%s&7 has cancelled the linking process", event.getUser().getAsTag())));
 
-                        playerInfo.delete();
+                        verification.player.delete();
                     }
                 }
             }, null);
