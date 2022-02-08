@@ -12,10 +12,13 @@ import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.github.riku32.discordlink.core.util.MojangAPI;
+import com.github.riku32.discordlink.core.util.skinrenderer.SkinRenderer;
 import com.google.common.collect.ImmutableList;
 import io.ebean.Database;
 import io.ebean.DatabaseFactory;
 import io.ebean.Transaction;
+import io.ebean.annotation.PersistBatch;
 import io.ebean.annotation.Platform;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
@@ -29,31 +32,34 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 public class DiscordLink {
-    public static Logger logger;
+    public static Logger LOGGER;
+    public static boolean DEBUG_MODE;
 
     private final PlatformPlugin plugin;
     private Database database;
     private Config config;
     private Locale locale;
     private Bot bot;
+    private SkinRenderer renderContext;
 
     private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
     public DiscordLink(PlatformPlugin plugin) {
         this.plugin = plugin;
-        DiscordLink.logger = plugin.getLogger();
+        LOGGER = plugin.getLogger();
 
         File configFile = new File(plugin.getDataDirectory(), "config.yml");
         if (!configFile.exists()) {
             try {
                 Files.copy(Path.of(Objects.requireNonNull(getClass().getResource("config.yml")).getPath()), configFile.toPath());
-                logger.severe("Created a new configuration file, please fill in the file");
+                LOGGER.severe("Created a new configuration file, please fill in the file");
             } catch (IOException e) {
-                logger.severe("Unable to create configuration file");
-                logger.severe(e.getMessage());
+                LOGGER.severe("Unable to create configuration file");
+                LOGGER.severe(e.getMessage());
             }
             disable(false);
             return;
@@ -62,10 +68,26 @@ public class DiscordLink {
         try {
             this.config = new Config(new String(Files.readAllBytes(configFile.toPath())));
         } catch (NoSuchElementException | IOException e) {
-            logger.severe(e.getMessage());
+            LOGGER.severe(e.getMessage());
             disable(false);
             return;
         }
+
+        DEBUG_MODE = config.isDebugLog();
+
+        if (DEBUG_MODE) {
+            try {
+                FileHandler handler = new FileHandler(new File(plugin.getDataDirectory(), "debuglog.txt").getPath());
+                LOGGER.addHandler(handler);
+            } catch (Exception e) {
+                LOGGER.severe(e.getMessage());
+                disable(false);
+                return;
+            }
+        }
+
+        renderContext = new SkinRenderer(getClass().getClassLoader());
+        renderContext.start();
 
         try {
             Properties prop = new Properties();
@@ -178,6 +200,8 @@ public class DiscordLink {
         injector.registerDependency(Config.class, config);
         injector.registerDependency(Locale.class, locale);
         injector.registerDependency(Bot.class, bot);
+        injector.registerDependency(SkinRenderer.class, renderContext);
+        injector.registerDependency(MojangAPI.class, new MojangAPI());
         return injector;
     }
 
@@ -193,6 +217,7 @@ public class DiscordLink {
     public void disable(boolean fromPluginShutdown) {
         if (bot != null) bot.shutdown();
         if (database != null) database.shutdown();
+        if (renderContext != null) renderContext.finish();
 
         // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
         // This is to prevent a recursive loop of disable being called
