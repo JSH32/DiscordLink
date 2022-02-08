@@ -4,6 +4,7 @@ import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
+import com.github.riku32.discordlink.core.util.MojangAPI;
 import com.github.riku32.discordlink.core.util.SkinUtil;
 import com.github.riku32.discordlink.core.util.TextUtil;
 import com.github.riku32.discordlink.core.bot.Bot;
@@ -15,11 +16,17 @@ import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEv
 import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
 import com.github.riku32.discordlink.core.locale.Locale;
+import com.github.riku32.discordlink.core.util.skinrenderer.RenderType;
+import com.github.riku32.discordlink.core.util.skinrenderer.SkinRenderer;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class PlayerStatusListener {
     @Dependency
@@ -37,6 +44,12 @@ public class PlayerStatusListener {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Dependency(named = "frozenPlayers")
     private Set<PlatformPlayer> frozenPlayers;
+
+    @Dependency
+    private MojangAPI mojangAPI;
+
+    @Dependency
+    private SkinRenderer skinRenderer;
 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event) {
@@ -70,13 +83,8 @@ public class PlayerStatusListener {
         if (playerInfoOptional.isEmpty() || !playerInfoOptional.get().verified) {
             if (config.isLinkRequired()) return;
 
-            if (config.isChannelBroadcastJoin()) {
-                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                        .setColor(Constants.Colors.SUCCESS)
-                        .setAuthor(event.getPlayer().getName() + " has joined", null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
-                        .build())
-                        .queue();
-            }
+            if (config.isChannelBroadcastJoin())
+                sendUnlinkedEventToChat(event.getPlayer().getUuid(), true, event.getPlayer().getName() + " has joined");
 
             if (config.isStatusEnabled()) {
                 String joinMessage = TextUtil.colorize(config.getStatusJoinUnlinked()
@@ -102,12 +110,8 @@ public class PlayerStatusListener {
                     event.getPlayer().setGameMode(platform.getDefaultGameMode());
 
                     if (config.isChannelBroadcastJoin()) {
-                        bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                                .setColor(Constants.Colors.SUCCESS)
-                                .setAuthor(String.format("%s (%s) has joined", event.getPlayer().getName(), user.getAsTag()),
-                                        null, user.getAvatarUrl())
-                                .build())
-                                .queue();
+                        sendLinkedEventToChat(member, true,
+                                String.format("%s (%s) has joined", event.getPlayer().getName(), user.getAsTag()));
                     }
                 },
                 ignored -> {
@@ -152,14 +156,9 @@ public class PlayerStatusListener {
                     ));
                 }
 
-                if (config.isChannelBroadcastQuit()) {
-                    bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                            .setColor(Constants.Colors.FAIL)
-                            .setAuthor(String.format("%s (%s) has left", event.getPlayer().getName(), member.getUser().getAsTag()),
-                                    null, member.getUser().getAvatarUrl())
-                            .build())
-                            .queue();
-                }
+                if (config.isChannelBroadcastQuit())
+                    sendLinkedEventToChat(member, false,
+                            String.format("%s (%s) has left", event.getPlayer().getName(), member.getUser().getAsTag()));
             });
         } else if (!config.isLinkRequired()) {
             if (config.isStatusEnabled()) {
@@ -167,13 +166,8 @@ public class PlayerStatusListener {
                         .replaceAll("%username%", event.getPlayer().getName())));
             }
 
-            if (config.isChannelBroadcastQuit()) {
-                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                        .setColor(Constants.Colors.FAIL)
-                        .setAuthor(String.format("%s has left", event.getPlayer().getName()), null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
-                        .build())
-                        .queue();
-            }
+            if (config.isChannelBroadcastQuit())
+                sendUnlinkedEventToChat(event.getPlayer().getUuid(), false, String.format("%s has left", event.getPlayer().getName()));
         }
     }
 
@@ -203,14 +197,9 @@ public class PlayerStatusListener {
                                             TextUtil.colorToChatString(member.getColor()) : "&7"));
                 }
 
-                if (config.isChannelBroadcastDeath()) {
-                    bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                            .setColor(Constants.Colors.FAIL)
-                            .setAuthor(String.format("%s (%s) %s", event.getPlayer().getName(), member.getUser().getAsTag(), causeWithoutName),
-                                    null, member.getUser().getAvatarUrl())
-                            .build())
-                            .queue();
-                }
+                if (config.isChannelBroadcastDeath())
+                    sendLinkedEventToChat(member, false,
+                            String.format("%s (%s) %s", event.getPlayer().getName(), member.getUser().getAsTag(), causeWithoutName));
             });
         } else if (!config.isLinkRequired()) {
             if (config.isStatusEnabled()) {
@@ -220,13 +209,35 @@ public class PlayerStatusListener {
                                 .replaceAll("%cause%", causeWithoutName)));
             }
 
-            if (config.isChannelBroadcastDeath()) {
-                bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                        .setColor(Constants.Colors.FAIL)
-                        .setAuthor(String.format("%s %s", event.getPlayer().getName(), causeWithoutName), null, SkinUtil.getHeadURL(event.getPlayer().getUuid()))
-                        .build())
-                        .queue();
-            }
+            if (config.isChannelBroadcastDeath())
+                sendUnlinkedEventToChat(event.getPlayer().getUuid(), false, String.format("%s %s", event.getPlayer().getName(), causeWithoutName));
         }
+    }
+
+    private void sendLinkedEventToChat(Member member, boolean success, String text) {
+        bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
+                        .setColor(success ? Constants.Colors.SUCCESS : Constants.Colors.FAIL)
+                        .setAuthor(text, null, member.getUser().getAvatarUrl())
+                        .build())
+                .queue();
+    }
+
+    private void sendUnlinkedEventToChat(UUID uuid, boolean success, String text) {
+        mojangAPI.getRenderConfiguration(uuid, RenderType.FACE)
+                .thenCompose(renderConfiguration -> {
+                    try {
+                        return skinRenderer.queueRenderTask(renderConfiguration, 128, 128);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .thenAccept(image -> {
+                    bot.getChannel().sendMessage(new MessageBuilder().setEmbeds(new EmbedBuilder()
+                                    .setColor(success ? Constants.Colors.SUCCESS : Constants.Colors.FAIL)
+                                    .setAuthor(text, null, "attachment://face.png")
+                                    .build()).build())
+                            .addFile(image, "face.png")
+                            .submit();
+                });
     }
 }
