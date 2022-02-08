@@ -22,10 +22,6 @@ public class DatabaseSettings {
                 this.platform = Platform.H2;
                 break;
             }
-            case "sqlite": {
-                this.platform = Platform.SQLITE;
-                break;
-            }
             case "postgresql": {
                 this.platform = Platform.POSTGRES;
                 break;
@@ -36,7 +32,7 @@ public class DatabaseSettings {
             }
             default: {
                 throw new IllegalArgumentException(String.format(
-                        "Database type %s was not a valid database type\nAvailable options are: (H2, SQLite, MySQL, PostgreSQL)",
+                        "Database type %s was not a valid database type\nAvailable options are: (H2, MySQL, PostgreSQL)",
                         platform));
             }
         }
@@ -53,8 +49,6 @@ public class DatabaseSettings {
         switch (platform) {
             case H2:
                 return "jdbc:h2:file:" + new File(folder, fileName).getAbsolutePath();
-            case SQLITE:
-                return "jdbc:sqlite:" + new File(folder, fileName + ".db").getAbsolutePath();
             case MYSQL:
                 return String.format("jdbc:mysql://%s/%s", address, databaseName);
             case POSTGRES:

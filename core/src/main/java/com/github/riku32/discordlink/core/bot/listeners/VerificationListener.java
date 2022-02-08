@@ -57,22 +57,22 @@ public class VerificationListener extends ListenerAdapter {
                 return;
             }
 
-            if (!verification.value.equals(event.getMessageId()))
+            if (!verification.verificationValue.equals(event.getMessageId()))
                 return;
 
-            mojangAPI.getName(verification.player.uuid, name -> {
+            mojangAPI.getName(verification.player.uuid).thenAccept(name -> {
                 switch (event.getComponentId()) {
                     case "link.verify": {
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle("Linked")
-                                .setDescription(String.format("Your discord account has been linked to %s", name))
-                                .setColor(Constants.Colors.SUCCESS)
-                                .build()).queue();
+                            .setTitle("Linked")
+                            .setDescription(String.format("Your discord account has been linked to %s", name))
+                            .setColor(Constants.Colors.SUCCESS)
+                            .build()).queue();
 
                         // Verify the player
                         verification.player
-                                .setVerified(true)
-                                .save();
+                            .setVerified(true)
+                            .save();
 
                         PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
                         if (player != null) {
@@ -84,20 +84,20 @@ public class VerificationListener extends ListenerAdapter {
                             if (plugin.getConfig().isLinkRequired()) {
                                 if (plugin.getConfig().isStatusEnabled()) {
                                     plugin.getPlugin().broadcast(TextUtil.colorize(plugin.getConfig().getStatusJoinLinked()
-                                            .replaceAll("%username%", name)
-                                            .replaceAll("%tag%", event.getUser().getAsTag())
-                                            .replaceAll("%color%", member.getColor() != null ?
-                                                    TextUtil.colorToChatString(member.getColor()) : "&7")));
+                                        .replaceAll("%username%", name)
+                                        .replaceAll("%tag%", event.getUser().getAsTag())
+                                        .replaceAll("%color%", member.getColor() != null ?
+                                            TextUtil.colorToChatString(member.getColor()) : "&7")));
                                 }
 
                                 if (plugin.getConfig().isCrossChatEnabled()) {
                                     if (bot.getChannel() != null)
                                         bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                                                        .setColor(Constants.Colors.SUCCESS)
-                                                        .setAuthor(String.format("%s (%s) has joined", player.getName(), event.getUser().getAsTag()),
-                                                                null, event.getUser().getAvatarUrl())
-                                                        .build())
-                                                .queue();
+                                                .setColor(Constants.Colors.SUCCESS)
+                                                .setAuthor(String.format("%s (%s) has joined", player.getName(), event.getUser().getAsTag()),
+                                                    null, event.getUser().getAvatarUrl())
+                                                .build())
+                                            .queue();
                                 }
 
                                 player.setGameMode(plugin.getPlugin().getDefaultGameMode());
@@ -108,10 +108,10 @@ public class VerificationListener extends ListenerAdapter {
                     }
                     case "link.cancel": {
                         event.replyEmbeds(new EmbedBuilder()
-                                .setTitle("Cancelled")
-                                .setDescription("You have cancelled the linking process")
-                                .setColor(Constants.Colors.FAIL)
-                                .build()).queue();
+                            .setTitle("Cancelled")
+                            .setDescription("You have cancelled the linking process")
+                            .setColor(Constants.Colors.FAIL)
+                            .build()).queue();
 
                         PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
                         if (player != null)
@@ -120,7 +120,7 @@ public class VerificationListener extends ListenerAdapter {
                         verification.player.delete();
                     }
                 }
-            }, null);
+            });
         });
     }
 }

@@ -16,7 +16,7 @@ public class VerificationFinder extends Finder<Long, Verification> {
                 .fetch("player")
                 .where()
                 .eq("type", type.getValue())
-                .eq("value", value)
+                .eq("verification_value", value)
                 .findOneOrEmpty();
     }
 }

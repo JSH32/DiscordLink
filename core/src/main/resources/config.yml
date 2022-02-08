@@ -12,7 +12,6 @@ database:
   #   | => PostgreSQL
   #
   #   | Flat file/local database - don't require any extra configuration
-  #   | => H2 (preferred over SQLite)
   #   | => SQLite
   method: h2
 

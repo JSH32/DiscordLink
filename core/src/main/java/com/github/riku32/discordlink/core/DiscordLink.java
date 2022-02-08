@@ -139,15 +139,11 @@ public class DiscordLink {
             return null;
         }
 
-
         // Create Database configurations
         DataSourceConfig dataSourceConfig = new DataSourceConfig();
         dataSourceConfig.setUrl(config.getDatabaseSettings().getConnectionUri(plugin.getDataDirectory(), "database"));
         dataSourceConfig.setUsername(config.getDatabaseSettings().username);
         dataSourceConfig.setPassword(config.getDatabaseSettings().password);
-
-        if (config.getDatabaseSettings().platform == Platform.SQLITE)
-            dataSourceConfig.setIsolationLevel(Transaction.SERIALIZABLE);
 
         DatabaseConfig dbConfig = new DatabaseConfig();
         dbConfig.setDataSourceConfig(dataSourceConfig);

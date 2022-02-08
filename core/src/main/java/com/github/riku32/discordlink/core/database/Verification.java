@@ -29,7 +29,7 @@ public class Verification extends Model {
 
     @Column(unique = true)
     @DbComment("Value of the verification, this is a messageId in message_reaction and a code in code")
-    public String value;
+    public String verificationValue;
 
     /**
      * Create a new verification object in the database<br>
@@ -44,6 +44,6 @@ public class Verification extends Model {
             VerificationType verificationType, String verificationValue) {
         this.player = player;
         this.type = verificationType;
-        this.value = verificationValue;
+        this.verificationValue = verificationValue;
     }
 }

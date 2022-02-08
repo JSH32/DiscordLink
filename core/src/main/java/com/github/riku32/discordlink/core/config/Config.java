@@ -5,6 +5,7 @@ import org.simpleyaml.configuration.file.YamlFile;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class Config {
     private final String token;
