@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.core.framework.eventbus.events;
 
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import net.kyori.adventure.text.Component;
 
 import java.util.Set;
 
@@ -13,17 +14,12 @@ public abstract class PlayerChatEvent extends Event {
      *
      * @return message
      */
-    public abstract String getMessage();
+    public abstract Component getMessage();
 
     /**
      * Set the message that the user sent
      */
-    public abstract void setMessage(String message);
-
-    /**
-     * Set the format that will be sent to users
-     */
-    public abstract void setFormat(String format);
+    public abstract void setMessage(Component message);
 
     /**
      * Get all recipients that will receive this message

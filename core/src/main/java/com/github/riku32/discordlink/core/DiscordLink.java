@@ -20,6 +20,7 @@ import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
 import io.ebean.migration.MigrationConfig;
 import io.ebean.migration.MigrationRunner;
+import net.kyori.adventure.text.Component;
 
 import javax.security.auth.login.LoginException;
 import java.io.File;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -50,11 +52,16 @@ public class DiscordLink {
         File configFile = new File(plugin.getDataDirectory(), "config.yml");
         if (!configFile.exists()) {
             try {
-                Files.copy(Path.of(Objects.requireNonNull(getClass().getResource("config.yml")).getPath()), configFile.toPath());
+                configFile.getParentFile().mkdirs();
+                Files.copy(
+                    Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("config.yml")),
+                    configFile.toPath()
+                );
+
                 LOGGER.severe("Created a new configuration file, please fill in the file");
             } catch (IOException e) {
                 LOGGER.severe("Unable to create configuration file");
-                LOGGER.severe(e.getMessage());
+                LOGGER.severe(e.toString());
             }
             disable(false);
             return;
@@ -63,7 +70,7 @@ public class DiscordLink {
         try {
             this.config = new Config(new String(Files.readAllBytes(configFile.toPath())));
         } catch (NoSuchElementException | IOException e) {
-            LOGGER.severe(e.getMessage());
+            LOGGER.severe(e.toString());
             disable(false);
             return;
         }
@@ -196,22 +203,22 @@ public class DiscordLink {
         return injector;
     }
 
-    public void broadcast(String message) {
+    public void broadcast(Component message) {
         plugin.broadcast(message);
     }
 
     /**
      * Disable the plugin
      *
-     * @param fromPluginShutdown was this called from the {@link PlatformPlugin} implementation?
+     * @param triggerShutdown should this trigger a shutdown in respective platforms.
      */
-    public void disable(boolean fromPluginShutdown) {
+    public void disable(boolean triggerShutdown) {
         if (bot != null) bot.shutdown();
         if (database != null) database.shutdown();
 
-        // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
-        // This is to prevent a recursive loop of disable being called
-        if (fromPluginShutdown) plugin.disable();
+        // This is to prevent a recursive loop of disable being called.
+        // Don't call shutdown on plugin unless triggered.
+        if (triggerShutdown) plugin.disable();
     }
 
     public Locale getLocale() {

@@ -15,6 +15,10 @@ dependencies {
     implementation 'net.dv8tion:JDA:4.3.0_307'
     implementation 'club.minnced:discord-webhooks:0.5.8'
 
+    implementation 'net.kyori:adventure-api:4.13.0'
+    implementation 'net.kyori:adventure-text-minimessage:4.13.0'
+    implementation 'net.kyori:adventure-text-serializer-plain:4.13.0'
+
     implementation 'io.ebean:ebean-core:12.14.1'
     implementation 'io.ebean:ebean:12.14.1'
     implementation 'io.ebean:ebean-migration:12.13.0'

@@ -3,6 +3,7 @@ package com.github.riku32.discordlink.spigot.events;
 import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.core.framework.eventbus.exceptions.EventPostException;
 import com.github.riku32.discordlink.spigot.PlayerRegistry;
+import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -21,7 +22,7 @@ public class MainListener implements Listener {
     }
 
     @EventHandler
-    private void onPlayerChat(AsyncPlayerChatEvent chatEvent) throws EventPostException {
+    private void onPlayerChat(AsyncChatEvent chatEvent) throws EventPostException {
         eventBus.post(new SpigotChatEvent(chatEvent, playerRegistry.getPlayer(chatEvent.getPlayer())));
     }
 

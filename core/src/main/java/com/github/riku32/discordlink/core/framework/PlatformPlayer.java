@@ -1,5 +1,7 @@
 package com.github.riku32.discordlink.core.framework;
 
+import net.kyori.adventure.text.Component;
+
 import java.util.UUID;
 
 /**
@@ -25,7 +27,7 @@ public interface PlatformPlayer {
      *
      * @param message message to send to player
      */
-    void sendMessage(String message);
+    void sendMessage(Component message);
 
     /**
      * Check if player has either a permission node or is operator
@@ -49,5 +51,5 @@ public interface PlatformPlayer {
     /**
      * Kicks a player from the server
      */
-    void kickPlayer(String message);
+    void kickPlayer(Component message);
 }

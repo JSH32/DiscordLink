@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.core.locale;
 
-import com.github.riku32.discordlink.core.util.TextUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class LocaleElement {
     private String string;
@@ -19,19 +20,16 @@ public class LocaleElement {
         return this;
     }
 
-    public String info() {
-        return TextUtil.colorize("&7[&b&l!&7] &r" + string);
-    }
+    public Component info() { return MiniMessage.miniMessage().deserialize("<gray>[<bold><aqua>!</bold><gray>] <reset>" + string); }
 
-    public String success() {
-        return TextUtil.colorize("&7[&a\u2714&7] &r" + string);
-    }
+    public Component success() {return MiniMessage.miniMessage().deserialize("<gray>[<bold><green>✔</bold><gray>] <reset>" + string); }
 
-    public String error() {
-        return TextUtil.colorize("&7[&c\u2717&7] &r" + string);
-    }
+    public Component error() {return MiniMessage.miniMessage().deserialize("<gray>[<bold><red>✗</bold><gray>] <reset>" + string); }
 
-    public String toString() {
-        return TextUtil.colorize("&7[&9&lD&2&lL&7] &r" + string);
+    public Component component(boolean prefix) {
+        return MiniMessage.miniMessage().deserialize(prefix
+                ? "<gray>[<bold><blue>D<dark_green>L<gray></bold>] <reset>" + string
+                : string
+        );
     }
 }

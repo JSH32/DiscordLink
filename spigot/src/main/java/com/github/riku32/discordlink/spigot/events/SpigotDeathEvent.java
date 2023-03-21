@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
+import net.kyori.adventure.text.Component;
 
 public class SpigotDeathEvent extends PlayerDeathEvent {
     private final org.bukkit.event.entity.PlayerDeathEvent deathEvent;
@@ -18,12 +19,12 @@ public class SpigotDeathEvent extends PlayerDeathEvent {
     }
 
     @Override
-    public String getDeathMessage() {
-        return deathEvent.getDeathMessage();
+    public Component getDeathMessage() {
+        return deathEvent.deathMessage();
     }
 
     @Override
-    public void setDeathMessage(String message) {
-        deathEvent.setDeathMessage(message);
+    public void setDeathMessage(Component message) {
+        deathEvent.deathMessage(message);
     }
 }

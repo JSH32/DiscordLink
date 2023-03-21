@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.core.framework;
 
 import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import net.kyori.adventure.text.Component;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -20,6 +21,14 @@ public interface PlatformPlugin {
      * @return player
      */
     PlatformPlayer getPlayer(UUID uuid);
+
+    /**
+     * Get a player from their UUID
+     *
+     * @param uuid target uuid
+     * @return player
+     */
+    PlatformOfflinePlayer getOfflinePlayer(UUID uuid);
 
     /**
      * Get a player from their username
@@ -68,7 +77,7 @@ public interface PlatformPlugin {
      *
      * @param message to broadcast
      */
-    void broadcast(String message);
+    void broadcast(Component message);
 
     /**
      * Get default game mode set for the server

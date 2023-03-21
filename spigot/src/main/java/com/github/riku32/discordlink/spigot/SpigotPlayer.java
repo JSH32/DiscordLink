@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.spigot;
 
 import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -25,7 +26,7 @@ public class SpigotPlayer implements PlatformPlayer {
     }
 
     @Override
-    public void sendMessage(String message) {
+    public void sendMessage(Component message) {
         player.sendMessage(message);
     }
 
@@ -60,7 +61,7 @@ public class SpigotPlayer implements PlatformPlayer {
     }
 
     @Override
-    public void kickPlayer(String message) {
-        player.kickPlayer(message);
+    public void kickPlayer(Component message) {
+        player.kick(message);
     }
 }

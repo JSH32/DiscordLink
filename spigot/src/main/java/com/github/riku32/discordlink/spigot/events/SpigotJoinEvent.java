@@ -2,6 +2,8 @@ package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEvent;
+import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
+import net.kyori.adventure.text.Component;
 
 public class SpigotJoinEvent extends PlayerJoinEvent {
     private final org.bukkit.event.player.PlayerJoinEvent joinEvent;
@@ -18,12 +20,12 @@ public class SpigotJoinEvent extends PlayerJoinEvent {
     }
 
     @Override
-    public String getJoinMessage() {
-        return joinEvent.getJoinMessage();
+    public Component getJoinMessage() {
+        return joinEvent.joinMessage();
     }
 
     @Override
-    public void setJoinMessage(String message) {
-        joinEvent.setJoinMessage(message);
+    public void setJoinMessage(Component message) {
+        joinEvent.joinMessage(message);
     }
 }

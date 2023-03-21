@@ -50,7 +50,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
 
         if (args.length < 1) {
             sender.sendMessage(locale.getElement("command.version")
-                    .set("version", plugin.getDescription().getVersion()).toString());
+                    .set("version", plugin.getDescription().getVersion()).component(true));
             return true;
         }
 

@@ -3,6 +3,10 @@ package com.github.riku32.discordlink.spigot.events;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerChatEvent;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
+import net.kyori.adventure.text.Component;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -107,10 +111,10 @@ public class SpigotChatEvent extends PlayerChatEvent {
         }
     }
 
-    private final AsyncPlayerChatEvent chatEvent;
+    private final AsyncChatEvent chatEvent;
     private final PlatformPlayer player;
 
-    public SpigotChatEvent(AsyncPlayerChatEvent chatEvent, PlatformPlayer player) {
+    public SpigotChatEvent(AsyncChatEvent chatEvent, PlatformPlayer player) {
         this.chatEvent = chatEvent;
         this.player = player;
     }
@@ -127,22 +131,18 @@ public class SpigotChatEvent extends PlayerChatEvent {
     }
 
     @Override
-    public String getMessage() {
-        return chatEvent.getMessage();
+    public Component getMessage() {
+        return chatEvent.message();
     }
 
     @Override
-    public void setMessage(String message) {
-        chatEvent.setMessage(message);
+    public void setMessage(Component message) {
+        chatEvent.message(message);
     }
 
     @Override
-    public void setFormat(String format) {
-        chatEvent.setFormat(format);
-    }
-
-    @Override
+    @SuppressWarnings("deprecation")
     public Set<PlatformPlayer> getRecipients() {
-        return new RecipientSet<>(chatEvent.getRecipients());
+        return new RecipientSet<>(chatEvent.recipients());
     }
 }

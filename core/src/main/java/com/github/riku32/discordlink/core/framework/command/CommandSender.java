@@ -2,6 +2,10 @@ package com.github.riku32.discordlink.core.framework.command;
 
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.UUID;
 
@@ -70,9 +74,9 @@ public class CommandSender {
      *
      * @param message to send
      */
-    public void sendMessage(String message) {
+    public void sendMessage(Component message) {
         if (isConsole())
-            plugin.getLogger().info(message);
+            plugin.getLogger().info(PlainTextComponentSerializer.plainText().serialize(message));
         else
             player.sendMessage(message);
     }

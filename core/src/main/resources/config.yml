@@ -13,6 +13,7 @@ database:
   #
   #   | Flat file/local database - don't require any extra configuration
   #   | => SQLite
+  #   | => H2
   method: h2
 
   # These options are only used if you use Remote databases
@@ -61,15 +62,15 @@ chat:
       # Should chat format should be applied on regular messages?
       enabled: true
 
-      linked: '&7[&2MC&7] %color%%username% &7(&o%tag%&7) » &r%message%'
-      unlinked: '&7[&2MC&7] &7%username% » &r%message%'
+      linked: '<gray>[<dark_green>MC<gray>] %color%%username% <gray>(<italic>%tag%</italic>) » <reset>%message%'
+      unlinked: '<gray>[<dark_green>MC<gray>] %username% » <reset>%message%'
 
     # Message formats for discord messages
     # This will never show if chat.crosschat is disabled
     # This does not have an enabled field as there is nothing else to process chat messages from discord
     discord:
-      linked: '&7[&9Discord&7] %color%%username% &7(&o%tag%&7) » &r%message%'
-      unlinked: '&7[&9Discord&7] %color%%tag%&7 » &r%message%'
+      linked: '<gray>[<blue>Discord<gray>] %color%%username% <gray>(<italic>%tag%</italic>) » <reset>%message%'
+      unlinked: '<gray>[<blue>Discord<gray>] %color%%tag% <gray>» <reset>%message%'
 
   # This will allow minecraft and discord chats/events to communicate with each other in a single channel
   crosschat:
@@ -102,33 +103,33 @@ chat:
 status_messages:
   enabled: true
   join:
-    linked: '%color%%username% &7(&o%tag%&7) joined the game'
-    unlinked: '&7%username% joined the game'
+    linked: '%color%%username% <gray>(<italic>%tag%</italic>) joined the game'
+    unlinked: '<gray>%username% joined the game'
 
   quit:
-    linked: '%color%%username% &7(&o%tag%&7) left the game'
-    unlinked: '&7%username% left the game'
+    linked: '%color%%username% <gray>(<italic>%tag%</italic>) left the game'
+    unlinked: '<gray>%username% left the game'
 
   # Variables:
   #   %cause% - Cause of death in game
   death:
-    linked: '%color%%username% &7(&o%tag%&7) %cause%'
-    unlinked: '&7%username% %cause%'
+    linked: '%color%%username% <gray>(<italic>%tag%</italic>) %cause%'
+    unlinked: '<gray>%username% %cause%'
 
 kick_messages:
   # Only happens if player is linked, link.allow_unlink is false, and player leaves the guild
   not_in_guild: |-
-    &cYou must be a member of the discord server to play on this Minecraft server
-    &cYour Minecraft account is already linked to &e%tag%
-    &7&odiscord.gg/invite
+    <red>You must be a member of the discord server to play on this Minecraft server
+    <red>Your Minecraft account is already linked to <yellow>%tag%
+    <gray><italic>discord.gg/invite
   # When user is linked and gets banned from discord
   # In the future this will be an actual ban listener and not a kick and can be disabled
   banned: |-
-    &cYou have been banned from the discord server
-    &7&odiscord.gg/invite
+    <red>You have been banned from the discord server
+    <gray><italic>discord.gg/invite
   # If the account was ToS banned or deleted
   # This assumes that you did something bad and shouldn't be able to play
   # In the future this will be an actual listener and not a kick and can be disabled
   tos: |-
-    &cYour account is ToS banned or deleted
-    &7&odiscord.gg/invite
+    <red>Your account is ToS banned or deleted
+    <gray><italic>discord.gg/invite

@@ -2,11 +2,14 @@ package com.github.riku32.discordlink.spigot;
 
 import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.framework.GameMode;
+import com.github.riku32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
 import com.github.riku32.discordlink.spigot.events.MainListener;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
@@ -49,9 +52,19 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
     }
 
     @Override
+    public void onDisable() {
+        discordLink.disable(false);
+    }
+
+    @Override
     public PlatformPlayer getPlayer(UUID uuid) {
         Player player = this.getServer().getPlayer(uuid);
         return player == null ? null : playerRegistry.getPlayer(player);
+    }
+
+    @Override
+    public PlatformOfflinePlayer getOfflinePlayer(UUID uuid) {
+        return new SpigotOfflinePlayer(this.getServer().getOfflinePlayer(uuid));
     }
 
     @Override
@@ -78,8 +91,7 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
 
     @Override
     public void disable() {
-        if (discordLink != null) discordLink.disable(true);
-
+        if (discordLink != null) discordLink.disable(false);
         Bukkit.getPluginManager().disablePlugin(this);
     }
 
@@ -94,8 +106,8 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
     }
 
     @Override
-    public void broadcast(String message) {
-        Bukkit.broadcastMessage(message);
+    public void broadcast(Component message) {
+        Bukkit.broadcast(message);
     }
 
     @Override

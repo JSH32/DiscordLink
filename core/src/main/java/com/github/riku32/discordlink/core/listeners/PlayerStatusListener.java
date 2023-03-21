@@ -5,8 +5,6 @@ import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
 import com.github.riku32.discordlink.core.util.MojangAPI;
-import com.github.riku32.discordlink.core.util.SkinUtil;
-import com.github.riku32.discordlink.core.util.TextUtil;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
@@ -16,17 +14,18 @@ import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEv
 import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
 import com.github.riku32.discordlink.core.locale.Locale;
-import com.github.riku32.discordlink.core.util.skinrenderer.RenderType;
-import com.github.riku32.discordlink.core.util.skinrenderer.SkinRenderer;
+import com.github.riku32.discordlink.core.util.SkinUtil;
+import com.github.riku32.discordlink.core.util.TextUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class PlayerStatusListener {
     @Dependency
@@ -48,9 +47,6 @@ public class PlayerStatusListener {
     @Dependency
     private MojangAPI mojangAPI;
 
-    @Dependency
-    private SkinRenderer skinRenderer;
-
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event) {
         if (config.isStatusEnabled()) event.setJoinMessage(null);
@@ -64,10 +60,10 @@ public class PlayerStatusListener {
             }
         } else if (!playerInfoOptional.get().verified) {
             bot.getJda().retrieveUserById((playerInfoOptional.get().discordId)).queue(user -> {
-                event.getPlayer().sendMessage(TextUtil.colorize(locale.getElement("join.verify_link")
+                event.getPlayer().sendMessage(locale.getElement("join.verify_link")
                                 .set("user_tag", user.getAsTag())
                                 .set("bot_tag", bot.getJda().getSelfUser().getAsTag())
-                                .info()));
+                                .info());
 
                 if (config.isLinkRequired()) {
                     frozenPlayers.add(event.getPlayer());
@@ -87,9 +83,8 @@ public class PlayerStatusListener {
                 sendUnlinkedEventToChat(event.getPlayer().getUuid(), true, event.getPlayer().getName() + " has joined");
 
             if (config.isStatusEnabled()) {
-                String joinMessage = TextUtil.colorize(config.getStatusJoinUnlinked()
-                        .replaceAll("%username%", event.getPlayer().getName()));
-                event.setJoinMessage(joinMessage);
+                event.setJoinMessage(MiniMessage.miniMessage().deserialize(config.getStatusJoinUnlinked()
+                        .replaceAll("%username%", event.getPlayer().getName())));
             }
 
             return;
@@ -100,11 +95,11 @@ public class PlayerStatusListener {
             guild.retrieveMemberById(playerInfoOptional.get().discordId).queue(
                 member -> {
                     if (config.isStatusEnabled()) {
-                        platform.broadcast(TextUtil.colorize(config.getStatusJoinLinked()
+                        platform.broadcast(MiniMessage.miniMessage().deserialize(config.getStatusJoinLinked()
                                 .replaceAll("%username%", event.getPlayer().getName())
-                                .replaceAll("%tag%", user.getAsTag()))
+                                .replaceAll("%tag%", user.getAsTag())
                                 .replaceAll("%color%", member.getColor() != null ?
-                                        TextUtil.colorToChatString(member.getColor()) : "&7"));
+                                        TextUtil.colorToHexMM(member.getColor()) : "<gray>")));
                     }
 
                     event.getPlayer().setGameMode(platform.getDefaultGameMode());
@@ -128,7 +123,7 @@ public class PlayerStatusListener {
                         return;
                     }
 
-                    event.getPlayer().kickPlayer(TextUtil.colorize(
+                    event.getPlayer().kickPlayer(MiniMessage.miniMessage().deserialize(
                             config.getKickNotInGuild().replaceAll("%tag%", user.getAsTag())));
                 }
             );
@@ -147,13 +142,12 @@ public class PlayerStatusListener {
             PlayerInfo playerInfo = playerInfoOptional.get();
             bot.getGuild().retrieveMemberById(playerInfo.discordId).queue(member -> {
                 if (config.isStatusEnabled()) {
-                    platform.broadcast(TextUtil.colorize(
+                    platform.broadcast(MiniMessage.miniMessage().deserialize(
                             config.getStatusQuitLinked()
                                     .replaceAll("%username%", event.getPlayer().getName())
                                     .replaceAll("%tag%", member.getUser().getAsTag())
                                     .replaceAll("%color%", member.getColor() != null ?
-                                            TextUtil.colorToChatString(member.getColor()) : "&7")
-                    ));
+                                            TextUtil.colorToHexMM(member.getColor()) : "<gray>")));
                 }
 
                 if (config.isChannelBroadcastQuit())
@@ -162,7 +156,7 @@ public class PlayerStatusListener {
             });
         } else if (!config.isLinkRequired()) {
             if (config.isStatusEnabled()) {
-                event.setQuitMessage(TextUtil.colorize(config.getStatusQuitUnlinked()
+                event.setQuitMessage(MiniMessage.miniMessage().deserialize(config.getStatusQuitUnlinked()
                         .replaceAll("%username%", event.getPlayer().getName())));
             }
 
@@ -174,10 +168,12 @@ public class PlayerStatusListener {
     @EventHandler
     private void onPlayerDeath(PlayerDeathEvent event) {
         final String causeWithoutName;
-        if (event.getDeathMessage() == null)
+        if (event.getDeathMessage() == null) {
             causeWithoutName = "died";
-        else
-            causeWithoutName = event.getDeathMessage().substring(event.getDeathMessage().indexOf(" ") + 1).replaceAll("\n", "");
+        } else {
+            String deathMessage = PlainTextComponentSerializer.plainText().serialize(event.getDeathMessage());
+            causeWithoutName = deathMessage.substring(deathMessage.indexOf(" ") + 1).replaceAll("\n", "");
+        }
 
         // Disable default event if status broadcast is enabled
         if (config.isStatusEnabled())
@@ -188,13 +184,13 @@ public class PlayerStatusListener {
             bot.getGuild().retrieveMemberById((playerInfoOptional.get().discordId)).queue(member -> {
                 // Send custom death message if status is enabled, else handle normally
                 if (config.isStatusEnabled()) {
-                    platform.broadcast(TextUtil.colorize(
-                            config.getStatusDeathLinked()
-                                    .replaceAll("%username%", event.getPlayer().getName())
-                                    .replaceAll("%tag%", member.getUser().getAsTag())
-                                    .replaceAll("%cause%", causeWithoutName))
-                                    .replaceAll("%color%", member.getColor() != null ?
-                                            TextUtil.colorToChatString(member.getColor()) : "&7"));
+                    platform.broadcast(MiniMessage.miniMessage().deserialize(
+                                    config.getStatusDeathLinked()
+                                            .replaceAll("%username%", event.getPlayer().getName())
+                                            .replaceAll("%tag%", member.getUser().getAsTag())
+                                            .replaceAll("%cause%", causeWithoutName)
+                                            .replaceAll("%color%", member.getColor() != null ?
+                                                    TextUtil.colorToHexMM(member.getColor()) : "<gray>")));
                 }
 
                 if (config.isChannelBroadcastDeath())
@@ -203,7 +199,7 @@ public class PlayerStatusListener {
             });
         } else if (!config.isLinkRequired()) {
             if (config.isStatusEnabled()) {
-                event.setDeathMessage(TextUtil.colorize(
+                event.setDeathMessage(MiniMessage.miniMessage().deserialize(
                         config.getStatusDeathUnlinked()
                                 .replaceAll("%username%", event.getPlayer().getName())
                                 .replaceAll("%cause%", causeWithoutName)));
@@ -223,21 +219,10 @@ public class PlayerStatusListener {
     }
 
     private void sendUnlinkedEventToChat(UUID uuid, boolean success, String text) {
-        mojangAPI.getRenderConfiguration(uuid, RenderType.FACE)
-                .thenCompose(renderConfiguration -> {
-                    try {
-                        return skinRenderer.queueRenderTask(renderConfiguration, 128, 128);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .thenAccept(image -> {
-                    bot.getChannel().sendMessage(new MessageBuilder().setEmbeds(new EmbedBuilder()
-                                    .setColor(success ? Constants.Colors.SUCCESS : Constants.Colors.FAIL)
-                                    .setAuthor(text, null, "attachment://face.png")
-                                    .build()).build())
-                            .addFile(image, "face.png")
-                            .submit();
-                });
+        bot.getChannel().sendMessage(new MessageBuilder().setEmbeds(new EmbedBuilder()
+                        .setColor(success ? Constants.Colors.SUCCESS : Constants.Colors.FAIL)
+                        .setAuthor(text, null, SkinUtil.getHeadURL(uuid))
+                        .build()).build())
+                .submit();
     }
 }
