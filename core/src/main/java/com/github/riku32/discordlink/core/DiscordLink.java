@@ -13,13 +13,9 @@ import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
 import com.github.riku32.discordlink.core.util.MojangAPI;
-import com.github.riku32.discordlink.core.util.skinrenderer.SkinRenderer;
 import com.google.common.collect.ImmutableList;
 import io.ebean.Database;
 import io.ebean.DatabaseFactory;
-import io.ebean.Transaction;
-import io.ebean.annotation.PersistBatch;
-import io.ebean.annotation.Platform;
 import io.ebean.config.DatabaseConfig;
 import io.ebean.datasource.DataSourceConfig;
 import io.ebean.migration.MigrationConfig;
@@ -44,7 +40,6 @@ public class DiscordLink {
     private Config config;
     private Locale locale;
     private Bot bot;
-    private SkinRenderer renderContext;
 
     private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
@@ -85,9 +80,6 @@ public class DiscordLink {
                 return;
             }
         }
-
-        renderContext = new SkinRenderer(getClass().getClassLoader());
-        renderContext.start();
 
         try {
             Properties prop = new Properties();
@@ -200,7 +192,6 @@ public class DiscordLink {
         injector.registerDependency(Config.class, config);
         injector.registerDependency(Locale.class, locale);
         injector.registerDependency(Bot.class, bot);
-        injector.registerDependency(SkinRenderer.class, renderContext);
         injector.registerDependency(MojangAPI.class, new MojangAPI());
         return injector;
     }
@@ -217,7 +208,6 @@ public class DiscordLink {
     public void disable(boolean fromPluginShutdown) {
         if (bot != null) bot.shutdown();
         if (database != null) database.shutdown();
-        if (renderContext != null) renderContext.finish();
 
         // Only call shutdown on the main plugin if shutdown was called within the plugin implementation.
         // This is to prevent a recursive loop of disable being called

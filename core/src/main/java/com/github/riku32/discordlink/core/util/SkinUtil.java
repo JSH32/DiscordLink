@@ -13,9 +13,7 @@ public class SkinUtil {
      * @return isometric head image
      */
     public static String getIsometricHeadStream(UUID uuid) {
-        // Visage is currently not working
-        //return new URL("https://visage.surgeplay.com/head/256/" + uuid.toString()).openStream();
-        return String.format("https://mc-heads.net/head/%s/256.png", uuid.toString());
+        return "https://visage.surgeplay.com/head/256/" + uuid.toString();
     }
 
     /**
