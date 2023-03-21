@@ -1,26 +1,16 @@
 package com.github.riku32.discordlink.core.util;
 
-import com.github.riku32.discordlink.core.util.skinrenderer.RenderConfiguration;
-import com.github.riku32.discordlink.core.util.skinrenderer.RenderType;
 import org.json.JSONArray;
-import org.json.JSONObject;
-
-import javax.imageio.ImageIO;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 
 /**
- * Mojang API utility to access data from the Mojang API
- *
+ * Mojang API utility to access data from the Mojang API.
+ * <p>
  * TODO: Stop using this, offline servers wont work, store in a DB cache instead
  */
 public class MojangAPI {
