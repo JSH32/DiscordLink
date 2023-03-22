@@ -130,7 +130,7 @@ public class CompiledCommand {
                             .map(arg -> arg.getChoices() == null ? "<gray><<yellow>" + arg.getArgumentName() + "<gray>>" :
                                     "<gray>[<yellow>" + String.join("<gray>|<yellow>", arg.getChoices()) + "<gray>]")
                             .collect(Collectors.joining(" "));
-                    return String.format(" <gray>/dl %s %s %s%n", baseCommandName, subCommandName, subCommandArgs);
+                    return String.format("%n <gray>/dl %s %s %s", baseCommandName, subCommandName, subCommandArgs);
                 })
                 .collect(Collectors.joining());
 
