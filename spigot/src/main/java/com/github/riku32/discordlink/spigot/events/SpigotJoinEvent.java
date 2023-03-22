@@ -2,7 +2,6 @@ package com.github.riku32.discordlink.spigot.events;
 
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEvent;
-import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
 
 public class SpigotJoinEvent extends PlayerJoinEvent {

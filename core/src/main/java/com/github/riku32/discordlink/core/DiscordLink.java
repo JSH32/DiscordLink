@@ -3,18 +3,21 @@ package com.github.riku32.discordlink.core;
 import club.minnced.discord.webhook.WebhookClient;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
+import com.github.riku32.discordlink.core.commands.CommandUnlink;
 import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.database.Verification;
-import com.github.riku32.discordlink.core.framework.dependency.Injector;
-import com.github.riku32.discordlink.core.listeners.ChatListener;
-import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
-import com.github.riku32.discordlink.core.listeners.MoveListener;
-import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
+import com.github.riku32.discordlink.core.framework.command.CommandCompileException;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
-import com.github.riku32.discordlink.core.util.MojangAPI;
+import com.github.riku32.discordlink.core.framework.dependency.Injector;
+import com.github.riku32.discordlink.core.framework.dependency.exceptions.DependencyNotFoundException;
+import com.github.riku32.discordlink.core.framework.dependency.exceptions.DependencyNotNullException;
+import com.github.riku32.discordlink.core.listeners.ChatListener;
+import com.github.riku32.discordlink.core.listeners.MoveListener;
+import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
+import com.github.riku32.discordlink.core.locale.Locale;
 import com.google.common.collect.ImmutableList;
 import io.ebean.Database;
 import io.ebean.DatabaseFactory;
@@ -42,7 +45,8 @@ public class DiscordLink {
     private Config config;
     private Locale locale;
     private Bot bot;
-    private WebhookClient messageRelay;
+
+    private Injector injector;
 
     private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
@@ -116,12 +120,11 @@ public class DiscordLink {
             return;
         }
 
-        this.messageRelay = config.getWebhook() == null ? null : WebhookClient.withUrl(config.getWebhook());
-
-        Injector injector = createInjector();
+        WebhookClient messageRelay = config.getWebhook() == null ? null : WebhookClient.withUrl(config.getWebhook());
 
         try {
             PlayerStatusListener playerStatusListener = new PlayerStatusListener();
+            injector = createInjector();
             injector.injectDependencies(playerStatusListener);
             plugin.getEventBus().register(playerStatusListener);
 
@@ -134,14 +137,17 @@ public class DiscordLink {
         }
 
         try {
-            CommandLink commandLink = new CommandLink();
-            injector.injectDependencies(commandLink);
-
-            plugin.registerCommand(new CompiledCommand(commandLink));
+            registerCommand(new CommandLink());
+            registerCommand(new CommandUnlink());
         } catch (Exception e) {
             e.printStackTrace();
             disable(false);
         }
+    }
+
+    private void registerCommand(Object command) throws DependencyNotFoundException, DependencyNotNullException, CommandCompileException {
+        injector.injectDependencies(command);
+        plugin.registerCommand(new CompiledCommand(command));
     }
 
     private Database databaseInit() {
@@ -203,7 +209,6 @@ public class DiscordLink {
         injector.registerDependency(Config.class, config);
         injector.registerDependency(Locale.class, locale);
         injector.registerDependency(Bot.class, bot);
-        injector.registerDependency(MojangAPI.class, new MojangAPI());
         return injector;
     }
 

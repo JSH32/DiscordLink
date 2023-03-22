@@ -1,11 +1,12 @@
 package com.github.riku32.discordlink.core.database;
 
 import com.github.riku32.discordlink.core.database.enums.VerificationType;
-import com.github.riku32.discordlink.core.database.finders.PlayerInfoFinder;
 import com.github.riku32.discordlink.core.database.finders.VerificationFinder;
 import io.ebean.Model;
-import io.ebean.annotation.*;
 import io.ebean.annotation.ConstraintMode;
+import io.ebean.annotation.DbComment;
+import io.ebean.annotation.DbForeignKey;
+import io.ebean.annotation.NotNull;
 
 import javax.persistence.*;
 

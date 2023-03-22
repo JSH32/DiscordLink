@@ -3,8 +3,6 @@ package com.github.riku32.discordlink.core.framework.command;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 import java.util.UUID;
@@ -62,7 +60,7 @@ public class CommandSender {
      *
      * @return UUID
      */
-    public UUID getUniqueId() {
+    public UUID getUuid() {
         if (isConsole())
             return CONSOLE_UUID;
 

@@ -1,7 +1,7 @@
 package com.github.riku32.discordlink.spigot.events;
 
-import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerMoveEvent;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerMoveEvent;
 
 public class SpigotMoveEvent extends PlayerMoveEvent {
     private final org.bukkit.event.player.PlayerMoveEvent moveEvent;

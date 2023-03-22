@@ -7,10 +7,14 @@ import com.github.riku32.discordlink.core.framework.command.annotation.Default;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CompiledCommand {
+    private final boolean userOnly;
     private final CommandData baseCommand;
     private final Set<CommandData> subCommands;
 
@@ -20,10 +24,16 @@ public class CompiledCommand {
             PlatformPlayer.class
     );
 
+    public boolean isUserOnly() {
+        return userOnly;
+    }
+
     public CompiledCommand(Object command) throws CommandCompileException {
         Command commandAnnotation = command.getClass().getAnnotation(Command.class);
         if (commandAnnotation == null)
             throw new CommandCompileException("The command must be annotated with the Command annotation");
+
+        this.userOnly = commandAnnotation.userOnly();
 
         Collection<Method> defaultHandlers = Arrays.stream(command.getClass().getDeclaredMethods())
                 .filter(m -> m.isAnnotationPresent(Default.class))
@@ -33,7 +43,7 @@ public class CompiledCommand {
             throw new CommandCompileException("Each command must have exactly one Default handler");
 
         Method baseMethod = defaultHandlers.iterator().next();
-        baseCommand = new CommandData(command, baseMethod, true, getArguments(baseMethod), commandAnnotation.userOnly());
+        baseCommand = new CommandData(command, baseMethod, true, getArguments(baseMethod), baseMethod.getAnnotation(Default.class).userOnly());
 
         if (baseMethod.getReturnType() != boolean.class)
             throw new CommandCompileException("Command must return a boolean");

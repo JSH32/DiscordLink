@@ -1,8 +1,8 @@
 package com.github.riku32.discordlink.core.listeners;
 
+import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.annotation.EventHandler;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerMoveEvent;
-import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 
 import java.util.Set;
 

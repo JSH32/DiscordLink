@@ -5,8 +5,6 @@ import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.database.Verification;
-import com.github.riku32.discordlink.core.database.finders.PlayerInfoFinder;
-import com.github.riku32.discordlink.core.database.finders.VerificationFinder;
 import com.github.riku32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.riku32.discordlink.core.util.TextUtil;
 import io.ebean.DB;
@@ -43,7 +41,7 @@ public class CrossChatListener extends ListenerAdapter {
         if (!e.getChannel().getId().equals(bot.getChannel().getId())) return;
 
         Member member = Objects.requireNonNull(e.getMember());
-        Optional<PlayerInfo> playerInfo = new PlayerInfoFinder().byDiscordIdOptional(member.getId());
+        Optional<PlayerInfo> playerInfo = PlayerInfo.find.byDiscordIdOptional(member.getId());
 
         if (plugin.getConfig().isLinkRequired()) {
             if (playerInfo.isEmpty()) {
@@ -59,7 +57,7 @@ public class CrossChatListener extends ListenerAdapter {
 
             if (!playerInfo.get().verified) {
                 e.getAuthor().openPrivateChannel().queue(privateChannel -> {
-                    Optional<Verification> optionalVerification = new VerificationFinder().byMember(playerInfo.get().discordId);
+                    Optional<Verification> optionalVerification = Verification.find.byMember(playerInfo.get().discordId);
                     if (optionalVerification.isEmpty()) {
                         // Delete the player since the verification did not exist.
                         DB.delete(playerInfo);

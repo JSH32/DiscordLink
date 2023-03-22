@@ -1,11 +1,10 @@
 package com.github.riku32.discordlink.core.framework;
 
-import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import net.kyori.adventure.text.Component;
 
 import java.io.File;
-import java.nio.ByteBuffer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -85,14 +84,4 @@ public interface PlatformPlugin {
      * @return game mode
      */
     GameMode getDefaultGameMode();
-
-    /**
-     * Check if a user is online based on their UUID
-     */
-    boolean isOnline(UUID uuid);
-
-    /**
-     * Check if a user is online based on their name
-     */
-    boolean isOnline(String name);
 }

@@ -1,8 +1,7 @@
 package com.github.riku32.discordlink.spigot.events;
 
-import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
-import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
 import net.kyori.adventure.text.Component;
 
 public class SpigotQuitEvent extends PlayerQuitEvent {

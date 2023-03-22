@@ -1,8 +1,8 @@
 package com.github.riku32.discordlink.core.commands;
 
-import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
 import com.github.riku32.discordlink.core.bot.Bot;
+import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.database.Verification;
 import com.github.riku32.discordlink.core.database.enums.VerificationType;
@@ -11,7 +11,6 @@ import com.github.riku32.discordlink.core.framework.command.annotation.Command;
 import com.github.riku32.discordlink.core.framework.command.annotation.Default;
 import com.github.riku32.discordlink.core.framework.dependency.annotation.Dependency;
 import com.github.riku32.discordlink.core.locale.Locale;
-import com.github.riku32.discordlink.core.util.MojangAPI;
 import com.github.riku32.discordlink.core.util.SkinUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
@@ -32,9 +31,6 @@ public class CommandLink {
 
     @Dependency
     private Locale locale;
-
-    @Dependency
-    private MojangAPI mojangAPI;
 
     @Default
     private boolean link(CommandSender sender, String tag) {
@@ -81,7 +77,7 @@ public class CommandLink {
             .setEmbeds(new EmbedBuilder()
                 .setColor(Constants.Colors.SUCCESS)
                 .setTitle("Minecraft Link")
-                .setThumbnail(SkinUtil.getIsometricHeadStream(sender.getUniqueId()))
+                .setThumbnail(SkinUtil.getIsometricHeadStream(sender.getUuid()))
                 .setDescription("Minecraft to Discord link initiated. Press verify to complete the account link process. If you do not want to link accounts or this was not you, press cancel." +
                         (!config.isAllowUnlink() ? "\n\n\u26A0 **THIS CANNOT BE UNDONE**" : ""))
                 .addField("Username", sender.getName(), true)
@@ -103,7 +99,7 @@ public class CommandLink {
                 }
 
                 // Create the player and a message verification in the database
-                PlayerInfo playerInfo = new PlayerInfo(sender.getUniqueId(), member.getId());
+                PlayerInfo playerInfo = new PlayerInfo(sender.getUuid(), member.getId());
                 playerInfo.save();
                 new Verification(playerInfo, VerificationType.MESSAGE_REACTION, message.getId()).save();
 

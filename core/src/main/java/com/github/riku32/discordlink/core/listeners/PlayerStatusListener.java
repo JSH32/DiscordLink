@@ -1,17 +1,16 @@
 package com.github.riku32.discordlink.core.listeners;
 
-import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.Constants;
-import com.github.riku32.discordlink.core.framework.PlatformPlugin;
-import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
-import com.github.riku32.discordlink.core.util.MojangAPI;
 import com.github.riku32.discordlink.core.bot.Bot;
+import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
+import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.dependency.annotation.Dependency;
 import com.github.riku32.discordlink.core.framework.eventbus.annotation.EventHandler;
+import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerDeathEvent;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerJoinEvent;
-import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerQuitEvent;
 import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.util.SkinUtil;
@@ -43,9 +42,6 @@ public class PlayerStatusListener {
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Dependency(named = "frozenPlayers")
     private Set<PlatformPlayer> frozenPlayers;
-
-    @Dependency
-    private MojangAPI mojangAPI;
 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event) {

@@ -1,8 +1,5 @@
 package com.github.riku32.discordlink.core.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.UUID;
 
 public class SkinUtil {

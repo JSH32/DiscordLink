@@ -8,7 +8,6 @@ import com.github.riku32.discordlink.core.database.enums.VerificationType;
 import com.github.riku32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.locale.Locale;
-import com.github.riku32.discordlink.core.util.MojangAPI;
 import com.github.riku32.discordlink.core.util.TextUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 public class VerificationListener extends ListenerAdapter {
     private final Bot bot;
     private final DiscordLink plugin;
-    private final MojangAPI mojangAPI = new MojangAPI();
 
     private final Locale locale;
 

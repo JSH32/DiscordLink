@@ -3,12 +3,11 @@ package com.github.riku32.discordlink.spigot;
 import com.github.riku32.discordlink.core.DiscordLink;
 import com.github.riku32.discordlink.core.framework.GameMode;
 import com.github.riku32.discordlink.core.framework.PlatformOfflinePlayer;
-import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
-import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
+import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.github.riku32.discordlink.core.framework.eventbus.EventBus;
 import com.github.riku32.discordlink.spigot.events.MainListener;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
@@ -17,7 +16,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.*;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -125,17 +126,5 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
 
         // Shouldn't even be possible
         return null;
-    }
-
-    @Override
-    public boolean isOnline(UUID uuid) {
-        Player player = Bukkit.getPlayer(uuid);
-        return player != null && player.isOnline();
-    }
-
-    @Override
-    public boolean isOnline(String name) {
-        Player player = Bukkit.getPlayer(name);
-        return player != null && player.isOnline();
     }
 }

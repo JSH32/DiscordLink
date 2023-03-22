@@ -15,5 +15,9 @@ import java.lang.annotation.*;
 public @interface Command {
     String[] aliases();
     String permission() default "";
+    /**
+     * If the platform has no permission system, this will be used instead to check if the command needs operator.
+     */
+    boolean needsOp() default false;
     boolean userOnly() default false;
 }

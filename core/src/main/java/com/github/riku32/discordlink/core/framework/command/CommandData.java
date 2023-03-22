@@ -42,8 +42,8 @@ public class CommandData {
         return commandAnnotation.aliases();
     }
 
-    public String getPermission() {
-        return commandAnnotation.permission().equals("") ? null : commandAnnotation.permission();
+    public Command getAnnotation() {
+        return commandAnnotation;
     }
 
     public boolean isUserOnly() {

@@ -2,7 +2,9 @@ package com.github.riku32.discordlink.core.config;
 
 import org.simpleyaml.configuration.file.YamlFile;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 import java.util.Optional;

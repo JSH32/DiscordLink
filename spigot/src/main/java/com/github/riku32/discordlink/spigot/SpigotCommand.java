@@ -1,10 +1,10 @@
 package com.github.riku32.discordlink.spigot;
 
-import com.github.riku32.discordlink.core.locale.Locale;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.command.ArgumentData;
 import com.github.riku32.discordlink.core.framework.command.CommandData;
 import com.github.riku32.discordlink.core.framework.command.CompiledCommand;
+import com.github.riku32.discordlink.core.locale.Locale;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -60,23 +60,31 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        if (command.getBaseCommand().isUserOnly() && sender.isConsole()) {
+        if (command.isUserOnly() && sender.isConsole()) {
             sender.sendMessage(locale.getElement("command.no_console")
                     .set("command", args[0]).error());
             return false;
         }
 
+        String permission = command.getBaseCommand().getAnnotation().permission();
+
         // Make sure base command permission is met
-        if (command.getBaseCommand().getPermission() != null && !commandSender.hasPermission(command.getBaseCommand().getPermission())) {
+        if (!permission.equals("") && !commandSender.hasPermission(permission)) {
             sender.sendMessage(locale.getElement("command.no_permission")
-                    .set("permission", command.getBaseCommand().getPermission()).error());
+                    .set("permission", permission).error());
             return false;
         }
 
         // Execute base command without arguments
         if (args.length == 1) {
-            if (command.getBaseCommand().getArguments().size() != 0) {
+            if (!command.getBaseCommand().getArguments().isEmpty()) {
                 sender.sendMessage(locale.getElement("command.invalid_args")
+                        .set("command", args[0]).error());
+                return false;
+            }
+
+            if (command.getBaseCommand().isUserOnly() && sender.isConsole()) {
+                sender.sendMessage(locale.getElement("command.no_console")
                         .set("command", args[0]).error());
                 return false;
             }
@@ -89,54 +97,55 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        // Execute sub commands with arguments
-        for (CommandData commandData : command.getSubCommands()) {
-            for (String alias : commandData.getAliases()) {
-                // Arg 0 will contain the base command name since the command is prefixed, Arg 1 will contain the subcommand
-                if (alias.equals(args[1])) {
-                    try {
-                        if (commandData.isUserOnly() && sender.isConsole()) {
-                            sender.sendMessage(locale.getElement("command.no_console")
-                                    .set("command", String.format("%s %s", args[0], alias)).error());
-                            return false;
-                        }
+        Optional<CommandData> subCommandDataOptional = command.getSubCommands().stream()
+                .filter(subCommand -> Arrays.asList(subCommand.getAliases()).contains(args[1]))
+                .findFirst();
 
-                        // Check if sub command permissions are met
-                        if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
-                            sender.sendMessage(locale.getElement("command.no_permission")
-                                    .set("permission", commandData.getPermission()).error());
-                            return false;
-                        }
+        if (subCommandDataOptional.isPresent()) {
+            CommandData commandData = subCommandDataOptional.get();
+            if (commandData.isUserOnly() && sender.isConsole()) {
+                sender.sendMessage(locale.getElement("command.no_console")
+                        .set("command", String.format("%s %s", args[0], args[1])).error());
+                return false;
+            }
 
-                        // Subtract two from length since one of the args will be the subcommand name and one will be base command
-                        if (commandData.getArguments().size() != args.length - 2) {
-                            sender.sendMessage(locale.getElement("command.invalid_args")
-                                    .set("command", String.format("%s %s", args[0], alias)).error());
-                            return false;
-                        }
+            String subPermission = commandData.getAnnotation().permission();
 
-                        Object[] arguments = new Object[args.length - 1];
-                        arguments[0] = sender;
-                        System.arraycopy(args, 2, arguments, 1, args.length - 2);
+            // Check if sub command permissions are met
+            if (!subPermission.equals("") && !commandSender.hasPermission(subPermission)) {
+                sender.sendMessage(locale.getElement("command.no_permission")
+                        .set("permission", subPermission).error());
+                return false;
+            }
 
-                        for (int i = 2; i < args.length; i++) {
-                            ArgumentParseResult parseResult = parseArgument(commandData.getArguments().get(i - 2), args[i]);
+            // Subtract two from length since one of the args will be the subcommand name and one will be base command
+            if (commandData.getArguments().size() != args.length - 2) {
+                sender.sendMessage(locale.getElement("command.invalid_args")
+                        .set("command", String.format("%s %s", args[0], args[1])).error());
+                return false;
+            }
 
-                            if (!parseResult.success) {
-                                sender.sendMessage(locale.getElement("command.invalid_args")
-                                        .set("command", String.format("%s %s", args[0], alias)).error());
-                                return false;
-                            }
+            Object[] arguments = new Object[args.length - 1];
+            arguments[0] = sender;
+            System.arraycopy(args, 2, arguments, 1, args.length - 2);
 
-                            arguments[i - 1] = parseResult.parsed;
-                        }
+            for (int i = 2; i < args.length; i++) {
+                ArgumentParseResult parseResult = parseArgument(commandData.getArguments().get(i - 2), args[i]);
 
-                        return (boolean) commandData.getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return false;
-                    }
+                if (!parseResult.success) {
+                    sender.sendMessage(locale.getElement("command.invalid_args")
+                            .set("command", String.format("%s %s", args[0], args[1])).error());
+                    return false;
                 }
+
+                arguments[i - 1] = parseResult.parsed;
+            }
+
+            try {
+                return (boolean) commandData.getMethod().invoke(command.getBaseCommand().getInstance(), arguments);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
             }
         }
 
@@ -187,23 +196,23 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         // Returns for subcommands and choices for base command
         if (args.length == 2) {
             if (compiledCommand.getBaseCommand().getArguments().size() > 0)
-                return getCompletion(compiledCommand.getBaseCommand().getArguments().get(0), compiledCommand.getSubCommands());
+                return getCompletion(sender, compiledCommand.getBaseCommand().getArguments().get(0), compiledCommand.getSubCommands());
 
-            return getCompletion(null, compiledCommand.getSubCommands());
+            return getCompletion(sender, null, compiledCommand.getSubCommands());
         }
 
         // Completion for subcommands at any stage
         for (CommandData commandData : compiledCommand.getSubCommands()) {
             if (!Arrays.asList(commandData.getAliases()).contains(args[1])) continue;
             if (commandData.getArguments().size() > args.length - 3)
-                return getCompletion(commandData.getArguments().get(args.length - 3), null);
+                return getCompletion(sender, commandData.getArguments().get(args.length - 3), null);
 
             return ImmutableList.of("");
         }
 
         // Completion for base at any stage
         if (compiledCommand.getBaseCommand().getArguments().size() > args.length - 2)
-            return getCompletion(compiledCommand.getBaseCommand().getArguments().get(args.length - 2), null);
+            return getCompletion(sender, compiledCommand.getBaseCommand().getArguments().get(args.length - 2), null);
 
         return ImmutableList.of("");
     }
@@ -242,7 +251,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         return new ArgumentParseResult(false, null);
     }
 
-    private List<String> getCompletion(ArgumentData argument, Set<CommandData> subCommands) {
+    private List<String> getCompletion(CommandSender sender, ArgumentData argument, Set<CommandData> subCommands) {
         List<String> completions = new ArrayList<>();
 
         if (argument != null) {
@@ -260,6 +269,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
 
         if (subCommands != null) {
             completions.addAll(subCommands.stream()
+                    .filter(command -> sender.hasPermission(command.getAnnotation().permission()))
                     .map(CommandData::getAliases)
                     .map(Arrays::asList)
                     .flatMap(List::stream)
