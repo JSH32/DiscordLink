@@ -1,6 +1,7 @@
 package com.github.riku32.discordlink.core.bot;
 
 import com.github.riku32.discordlink.core.DiscordLink;
+import com.github.riku32.discordlink.core.bot.listeners.CrossChatListener;
 import com.github.riku32.discordlink.core.bot.listeners.VerificationListener;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.neovisionaries.ws.client.DualStackMode;
@@ -42,7 +43,7 @@ public class Bot {
         final ScheduledExecutorService rateLimitThreadPool = new ScheduledThreadPoolExecutor(5, rateLimitThreadFactory);
 
         try {
-            jda = JDABuilder.createDefault(discordLink.getConfig().getToken())
+            JDABuilder jdaBuilder = JDABuilder.createDefault(discordLink.getConfig().getToken())
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .setWebsocketFactory(new WebSocketFactory()
@@ -55,8 +56,11 @@ public class Bot {
                     .addEventListeners(new VerificationListener(this, discordLink))
                     .enableIntents(GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.DIRECT_MESSAGE_REACTIONS,
-                            GatewayIntent.DIRECT_MESSAGES)
-                    .build().awaitReady();
+                            GatewayIntent.DIRECT_MESSAGES);
+
+            if (discordLink.getConfig().isCrossChatEnabled()) jdaBuilder.addEventListeners(new CrossChatListener(discordLink, this));
+
+            jda = jdaBuilder.build().awaitReady();
         } catch (InterruptedException e) {
             shutdown();
             throw e;

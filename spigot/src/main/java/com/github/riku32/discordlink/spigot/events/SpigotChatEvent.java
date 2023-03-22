@@ -3,7 +3,9 @@ package com.github.riku32.discordlink.spigot.events;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.eventbus.events.PlayerChatEvent;
 import com.github.riku32.discordlink.spigot.SpigotPlayer;
+import io.papermc.paper.chat.ChatRenderer;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -137,6 +139,7 @@ public class SpigotChatEvent extends PlayerChatEvent {
 
     @Override
     public void setMessage(Component message) {
+        chatEvent.renderer((source, sourceDisplayName, message1, viewer) -> message1);
         chatEvent.message(message);
     }
 

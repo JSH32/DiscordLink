@@ -1,11 +1,13 @@
 package com.github.riku32.discordlink.core;
 
+import club.minnced.discord.webhook.WebhookClient;
 import com.github.riku32.discordlink.core.bot.Bot;
 import com.github.riku32.discordlink.core.commands.CommandLink;
 import com.github.riku32.discordlink.core.config.Config;
 import com.github.riku32.discordlink.core.database.PlayerInfo;
 import com.github.riku32.discordlink.core.database.Verification;
 import com.github.riku32.discordlink.core.framework.dependency.Injector;
+import com.github.riku32.discordlink.core.listeners.ChatListener;
 import com.github.riku32.discordlink.core.listeners.PlayerStatusListener;
 import com.github.riku32.discordlink.core.listeners.MoveListener;
 import com.github.riku32.discordlink.core.locale.Locale;
@@ -27,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
@@ -42,6 +42,7 @@ public class DiscordLink {
     private Config config;
     private Locale locale;
     private Bot bot;
+    private WebhookClient messageRelay;
 
     private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
@@ -115,6 +116,8 @@ public class DiscordLink {
             return;
         }
 
+        this.messageRelay = config.getWebhook() == null ? null : WebhookClient.withUrl(config.getWebhook());
+
         Injector injector = createInjector();
 
         try {
@@ -122,6 +125,7 @@ public class DiscordLink {
             injector.injectDependencies(playerStatusListener);
             plugin.getEventBus().register(playerStatusListener);
 
+            plugin.getEventBus().register(new ChatListener(this, messageRelay, bot));
             plugin.getEventBus().register(new MoveListener(frozenPlayers));
         } catch (Exception e) {
             e.printStackTrace();

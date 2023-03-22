@@ -2,6 +2,7 @@ package com.github.riku32.discordlink.core.locale;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class LocaleElement {
     private String string;
@@ -32,4 +33,7 @@ public class LocaleElement {
                 : string
         );
     }
+
+    @Override
+    public String toString() { return string; }
 }

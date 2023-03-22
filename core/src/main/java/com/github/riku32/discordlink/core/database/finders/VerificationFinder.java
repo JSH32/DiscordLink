@@ -19,4 +19,12 @@ public class VerificationFinder extends Finder<Long, Verification> {
                 .eq("verification_value", value)
                 .findOneOrEmpty();
     }
+
+    public Optional<Verification> byMember(String memberId) {
+        return query()
+                .fetch("player")
+                .where()
+                .eq("discord_id", memberId)
+                .findOneOrEmpty();
+    }
 }
