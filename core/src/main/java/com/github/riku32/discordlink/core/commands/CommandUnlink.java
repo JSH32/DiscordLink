@@ -6,6 +6,7 @@ import com.github.riku32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.PlatformPlugin;
 import com.github.riku32.discordlink.core.framework.command.CommandSender;
+import com.github.riku32.discordlink.core.framework.command.annotation.Choice;
 import com.github.riku32.discordlink.core.framework.command.annotation.Command;
 import com.github.riku32.discordlink.core.framework.command.annotation.Default;
 import com.github.riku32.discordlink.core.framework.dependency.annotation.Dependency;
@@ -32,13 +33,19 @@ public class CommandUnlink {
        return unlink(sender, plugin.getOfflinePlayer(sender.getUuid()), null);
     }
 
+    @Command(
+            aliases = {"something"}
+    )
+    private boolean something(CommandSender sender, PlatformPlayer player, @Choice({"uno", "dos", "tres"}) String hi) {
+        return true;
+    }
+
     /**
      * Unlink another player by their MC name
      */
     @Command(
             aliases = {"minecraft"},
-            permission = "discord.unlink.player",
-            needsOp = true
+            permission = "discord.unlink.player"
     )
     private boolean unlink(CommandSender sender, PlatformPlayer player) {
         return unlink(sender, plugin.getOfflinePlayer(player.getUuid()), null);
@@ -49,8 +56,7 @@ public class CommandUnlink {
      */
     @Command(
             aliases = {"discord"},
-            permission = "discord.unlink.player",
-            needsOp = true
+            permission = "discord.unlink.player"
     )
     private boolean unlink(CommandSender sender, String tag) {
         Member member = bot.getGuild().getMemberByTag(tag);

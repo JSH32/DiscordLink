@@ -4,6 +4,9 @@ import com.github.riku32.discordlink.core.framework.PlatformPlayer;
 import com.github.riku32.discordlink.core.framework.command.annotation.Choice;
 import com.github.riku32.discordlink.core.framework.command.annotation.Command;
 import com.github.riku32.discordlink.core.framework.command.annotation.Default;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -91,5 +94,48 @@ public class CompiledCommand {
 
     public Set<CommandData> getSubCommands() {
         return subCommands;
+    }
+
+    /**
+     * If player is null this will be treated like a console sender.
+     */
+    public Component getUsage(CommandSender sender) {
+        if (sender.isConsole() && isUserOnly()) {
+            return MiniMessage.miniMessage().deserialize("<gray>Usage:%n <red>Command can only be run by a user.");
+        }
+
+        String baseCommandName = baseCommand.getAliases()[0];
+        String baseCommandArgs = baseCommand.getArguments().stream()
+                .map(arg -> "<gray><<yellow>" + arg.getArgumentName() + "<gray>>")
+                .collect(Collectors.joining(" "));
+
+        String basePermission = baseCommand.getAnnotation().permission();
+        String baseCommandUsage = (sender.isConsole() && baseCommand.isUserOnly())
+                || (!basePermission.equals("") && !sender.getPlayer().hasPermission(basePermission))
+                ? ""
+                : String.format(" <gray>/dl %s %s%n", baseCommandName, baseCommandArgs);
+
+        String subCommandsUsage = subCommands.stream()
+                .filter(subCommand -> {
+                    if (!sender.isConsole()) {
+                        String permission = subCommand.getAnnotation().permission();
+                        return permission.equals("") || sender.getPlayer().hasPermission(permission);
+                    } else {
+                        return !subCommand.isUserOnly();
+                    }
+                })
+                .map(subCommand -> {
+                    String subCommandName = subCommand.getAliases()[0];
+                    String subCommandArgs = subCommand.getArguments().stream()
+                            .map(arg -> arg.getChoices() == null ? "<gray><<yellow>" + arg.getArgumentName() + "<gray>>" :
+                                    "<gray>[<yellow>" + String.join("<gray>|<yellow>", arg.getChoices()) + "<gray>]")
+                            .collect(Collectors.joining(" "));
+                    return String.format(" <gray>/dl %s %s %s%n", baseCommandName, subCommandName, subCommandArgs);
+                })
+                .collect(Collectors.joining());
+
+        return MiniMessage.miniMessage().deserialize(subCommandsUsage.isEmpty() && baseCommandUsage.equals("")
+                ? String.format("<gray>Usage:%n <red>You can't use this command!")
+                : String.format("<gray>Usage:%n%s", baseCommandUsage + subCommandsUsage));
     }
 }

@@ -80,6 +80,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             if (!command.getBaseCommand().getArguments().isEmpty()) {
                 sender.sendMessage(locale.getElement("command.invalid_args")
                         .set("command", args[0]).error());
+                sender.sendMessage(command.getUsage(sender));
                 return false;
             }
 
@@ -122,6 +123,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             if (commandData.getArguments().size() != args.length - 2) {
                 sender.sendMessage(locale.getElement("command.invalid_args")
                         .set("command", String.format("%s %s", args[0], args[1])).error());
+                sender.sendMessage(command.getUsage(sender));
                 return false;
             }
 
@@ -135,6 +137,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
                 if (!parseResult.success) {
                     sender.sendMessage(locale.getElement("command.invalid_args")
                             .set("command", String.format("%s %s", args[0], args[1])).error());
+                    sender.sendMessage(command.getUsage(sender));
                     return false;
                 }
 
@@ -153,6 +156,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
         if (command.getBaseCommand().getArguments().size() != args.length - 1) {
             sender.sendMessage(locale.getElement("command.invalid_args")
                     .set("command", args[0]).error());
+            sender.sendMessage(command.getUsage(sender));
             return false;
         }
 
@@ -166,6 +170,7 @@ public class SpigotCommand implements CommandExecutor, TabCompleter {
             if (!parseResult.success) {
                 sender.sendMessage(locale.getElement("command.invalid_args")
                         .set("command", args[0]).error());
+                sender.sendMessage(command.getUsage(sender));
                 return false;
             }
 
