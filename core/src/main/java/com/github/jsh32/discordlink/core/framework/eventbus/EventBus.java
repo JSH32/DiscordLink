@@ -1,7 +1,7 @@
 package com.github.jsh32.discordlink.core.framework.eventbus;
 
-import com.github.jsh32.discordlink.core.framework.eventbus.events.Event;
 import com.github.jsh32.discordlink.core.framework.eventbus.annotation.EventHandler;
+import com.github.jsh32.discordlink.core.framework.eventbus.events.Event;
 import com.github.jsh32.discordlink.core.framework.eventbus.exceptions.EventPostException;
 import com.github.jsh32.discordlink.core.framework.eventbus.exceptions.ListenerRegisterException;
 import org.apache.commons.lang3.exception.ExceptionUtils;

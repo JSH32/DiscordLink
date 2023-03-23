@@ -1,6 +1,7 @@
 package com.github.jsh32.discordlink.core.framework.command;
 
 import com.github.jsh32.discordlink.core.framework.command.annotation.Command;
+import com.github.jsh32.discordlink.core.locale.Locale;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -12,7 +13,7 @@ public class CommandData {
     private final List<ArgumentData> argumentData;
     private final boolean userOnly;
 
-    public CommandData(Object instance, Method method, boolean mainCommand, List<ArgumentData> argumentData, boolean userOnly) {
+    public CommandData(Object instance, Locale locale, Method method, boolean mainCommand, List<ArgumentData> argumentData, boolean userOnly) {
         this.instance = instance;
         this.method = method;
         this.argumentData = argumentData;

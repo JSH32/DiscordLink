@@ -8,12 +8,7 @@ import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class SpigotPlayer implements PlatformPlayer {
-    public final Player player;
-
-    public SpigotPlayer(Player player) {
-        this.player = player;
-    }
+public record SpigotPlayer(Player player) implements PlatformPlayer {
 
     @Override
     public UUID getUuid() {
@@ -44,18 +39,10 @@ public class SpigotPlayer implements PlatformPlayer {
     public void setGameMode(GameMode gameMode) {
         Bukkit.getScheduler().runTask(DiscordLinkSpigot.INSTANCE, () -> {
             switch (gameMode) {
-                case CREATIVE:
-                    player.setGameMode(org.bukkit.GameMode.CREATIVE);
-                    break;
-                case SPECTATOR:
-                    player.setGameMode(org.bukkit.GameMode.SPECTATOR);
-                    break;
-                case SURVIVAL:
-                    player.setGameMode(org.bukkit.GameMode.SURVIVAL);
-                    break;
-                case ADVENTURE:
-                    player.setGameMode(org.bukkit.GameMode.ADVENTURE);
-                    break;
+                case CREATIVE -> player.setGameMode(org.bukkit.GameMode.CREATIVE);
+                case SPECTATOR -> player.setGameMode(org.bukkit.GameMode.SPECTATOR);
+                case SURVIVAL -> player.setGameMode(org.bukkit.GameMode.SURVIVAL);
+                case ADVENTURE -> player.setGameMode(org.bukkit.GameMode.ADVENTURE);
             }
         });
     }

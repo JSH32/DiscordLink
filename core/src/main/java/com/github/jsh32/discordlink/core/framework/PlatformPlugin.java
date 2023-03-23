@@ -1,7 +1,7 @@
 package com.github.jsh32.discordlink.core.framework;
 
-import com.github.jsh32.discordlink.core.framework.eventbus.EventBus;
 import com.github.jsh32.discordlink.core.framework.command.CompiledCommand;
+import com.github.jsh32.discordlink.core.framework.eventbus.EventBus;
 import net.kyori.adventure.text.Component;
 
 import java.io.File;
@@ -68,7 +68,7 @@ public interface PlatformPlugin {
     EventBus getEventBus();
 
     /**
-     * Register a command into the platforms command registry
+     * Register commands on the plugin. Every time this is called it should overwrite previous commands.
      */
     void registerCommands(List<CompiledCommand> compiledCommand);
 

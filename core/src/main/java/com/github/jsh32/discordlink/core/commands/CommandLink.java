@@ -1,16 +1,16 @@
 package com.github.jsh32.discordlink.core.commands;
 
+import com.github.jsh32.discordlink.core.Constants;
+import com.github.jsh32.discordlink.core.bot.Bot;
 import com.github.jsh32.discordlink.core.config.Config;
+import com.github.jsh32.discordlink.core.database.PlayerInfo;
+import com.github.jsh32.discordlink.core.database.Verification;
+import com.github.jsh32.discordlink.core.database.enums.VerificationType;
 import com.github.jsh32.discordlink.core.framework.command.CommandSender;
 import com.github.jsh32.discordlink.core.framework.command.annotation.Command;
 import com.github.jsh32.discordlink.core.framework.command.annotation.Default;
 import com.github.jsh32.discordlink.core.framework.dependency.annotation.Dependency;
 import com.github.jsh32.discordlink.core.locale.Locale;
-import com.github.jsh32.discordlink.core.Constants;
-import com.github.jsh32.discordlink.core.bot.Bot;
-import com.github.jsh32.discordlink.core.database.PlayerInfo;
-import com.github.jsh32.discordlink.core.database.Verification;
-import com.github.jsh32.discordlink.core.database.enums.VerificationType;
 import com.github.jsh32.discordlink.core.util.SkinUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
@@ -21,7 +21,10 @@ import net.dv8tion.jda.api.interactions.components.Button;
 
 import java.util.Optional;
 
-@Command(aliases = {"link"}, userOnly = true)
+@Command(
+        aliases = {"link"},
+        userOnly = true
+)
 public class CommandLink {
     @Dependency
     private Bot bot;
@@ -33,7 +36,7 @@ public class CommandLink {
     private Locale locale;
 
     @Default
-    private boolean link(CommandSender sender, String tag) {
+    private boolean link(CommandSender sender, Member member) {
         // Check if user is linked
         Optional<PlayerInfo> playerInfoOptional = PlayerInfo.find.byUuidOptional(sender.getPlayer().getUuid());
         if (playerInfoOptional.isPresent()) {
@@ -51,14 +54,6 @@ public class CommandLink {
                 }
             });
 
-            return false;
-        }
-
-        Member member;
-        try {
-            member = bot.getGuild().getMemberByTag(tag);
-        } catch (IllegalArgumentException ignored) {
-            sender.sendMessage(locale.getElement("link.account_invalid").error());
             return false;
         }
 

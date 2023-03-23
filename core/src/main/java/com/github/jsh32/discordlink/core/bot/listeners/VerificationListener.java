@@ -1,14 +1,14 @@
 package com.github.jsh32.discordlink.core.bot.listeners;
 
 import com.github.jsh32.discordlink.core.Constants;
+import com.github.jsh32.discordlink.core.DiscordLink;
+import com.github.jsh32.discordlink.core.bot.Bot;
 import com.github.jsh32.discordlink.core.database.Verification;
 import com.github.jsh32.discordlink.core.database.enums.VerificationType;
 import com.github.jsh32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.jsh32.discordlink.core.framework.PlatformPlayer;
 import com.github.jsh32.discordlink.core.locale.Locale;
 import com.github.jsh32.discordlink.core.util.TextUtil;
-import com.github.jsh32.discordlink.core.DiscordLink;
-import com.github.jsh32.discordlink.core.bot.Bot;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
@@ -67,17 +67,17 @@ public class VerificationListener extends ListenerAdapter {
             PlatformOfflinePlayer offlinePlayer = plugin.getPlugin().getOfflinePlayer(verification.player.uuid);
 
             switch (event.getComponentId()) {
-                case "link.verify": {
+                case "link.verify" -> {
                     event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("Linked")
-                        .setDescription(String.format("Your discord account has been linked to %s", offlinePlayer.getName()))
-                        .setColor(Constants.Colors.SUCCESS)
-                        .build()).queue();
+                            .setTitle("Linked")
+                            .setDescription(String.format("Your discord account has been linked to %s", offlinePlayer.getName()))
+                            .setColor(Constants.Colors.SUCCESS)
+                            .build()).queue();
 
                     // Verify the player
                     verification.player
-                        .setVerified(true)
-                        .save();
+                            .setVerified(true)
+                            .save();
 
                     if (offlinePlayer.isOnline()) {
                         PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
@@ -101,25 +101,24 @@ public class VerificationListener extends ListenerAdapter {
                             if (plugin.getConfig().isCrossChatEnabled()) {
                                 if (bot.getChannel() != null)
                                     bot.getChannel().sendMessageEmbeds(new EmbedBuilder()
-                                            .setColor(Constants.Colors.SUCCESS)
-                                            .setAuthor(String.format("%s (%s) has joined", player.getName(), event.getUser().getAsTag()),
-                                                null, event.getUser().getAvatarUrl())
-                                            .build())
-                                        .queue();
+                                                    .setColor(Constants.Colors.SUCCESS)
+                                                    .setAuthor(String.format("%s (%s) has joined", player.getName(), event.getUser().getAsTag()),
+                                                            null, event.getUser().getAvatarUrl())
+                                                    .build())
+                                            .queue();
                             }
 
                             player.setGameMode(plugin.getPlugin().getDefaultGameMode());
                         }
                     }
 
-                    break;
                 }
-                case "link.cancel": {
+                case "link.cancel" -> {
                     event.replyEmbeds(new EmbedBuilder()
-                        .setTitle("Cancelled")
-                        .setDescription("You have cancelled the linking process")
-                        .setColor(Constants.Colors.FAIL)
-                        .build()).queue();
+                            .setTitle("Cancelled")
+                            .setDescription("You have cancelled the linking process")
+                            .setColor(Constants.Colors.FAIL)
+                            .build()).queue();
 
                     PlatformPlayer player = plugin.getPlugin().getPlayer(verification.player.uuid);
                     if (player != null)

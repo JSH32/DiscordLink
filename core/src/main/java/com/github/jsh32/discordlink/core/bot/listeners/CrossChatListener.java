@@ -1,12 +1,12 @@
 package com.github.jsh32.discordlink.core.bot.listeners;
 
-import com.github.jsh32.discordlink.core.framework.PlatformOfflinePlayer;
-import com.github.jsh32.discordlink.core.util.TextUtil;
 import com.github.jsh32.discordlink.core.Constants;
 import com.github.jsh32.discordlink.core.DiscordLink;
 import com.github.jsh32.discordlink.core.bot.Bot;
 import com.github.jsh32.discordlink.core.database.PlayerInfo;
 import com.github.jsh32.discordlink.core.database.Verification;
+import com.github.jsh32.discordlink.core.framework.PlatformOfflinePlayer;
+import com.github.jsh32.discordlink.core.util.TextUtil;
 import io.ebean.DB;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;

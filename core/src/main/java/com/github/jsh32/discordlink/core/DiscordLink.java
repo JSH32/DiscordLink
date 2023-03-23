@@ -9,11 +9,8 @@ import com.github.jsh32.discordlink.core.database.PlayerInfo;
 import com.github.jsh32.discordlink.core.database.Verification;
 import com.github.jsh32.discordlink.core.framework.PlatformPlayer;
 import com.github.jsh32.discordlink.core.framework.PlatformPlugin;
-import com.github.jsh32.discordlink.core.framework.command.CommandCompileException;
 import com.github.jsh32.discordlink.core.framework.command.CompiledCommand;
 import com.github.jsh32.discordlink.core.framework.dependency.Injector;
-import com.github.jsh32.discordlink.core.framework.dependency.exceptions.DependencyNotFoundException;
-import com.github.jsh32.discordlink.core.framework.dependency.exceptions.DependencyNotNullException;
 import com.github.jsh32.discordlink.core.listeners.ChatListener;
 import com.github.jsh32.discordlink.core.listeners.MoveListener;
 import com.github.jsh32.discordlink.core.listeners.PlayerStatusListener;
@@ -35,7 +32,6 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class DiscordLink {
     public static Logger LOGGER;
@@ -114,13 +110,18 @@ public class DiscordLink {
         }
 
         try {
-            bot = new Bot(this);
+            this.bot = new Bot(this);
         } catch (LoginException | InterruptedException e) {
             e.printStackTrace();
             disable(false);
             return;
         }
+    }
 
+    /**
+     * Register all listeners and commands.
+     */
+    public void registerHandlers() {
         WebhookClient messageRelay = config.getWebhook() == null ? null : WebhookClient.withUrl(config.getWebhook());
 
         try {
@@ -151,7 +152,7 @@ public class DiscordLink {
         for (var command : commands) {
             try {
                 injector.injectDependencies(command);
-                compiledCommands.add(new CompiledCommand(command));
+                compiledCommands.add(new CompiledCommand(command, locale));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -246,6 +247,10 @@ public class DiscordLink {
 
     public Config getConfig() {
         return config;
+    }
+
+    public Bot getBot() {
+        return bot;
     }
 
     public PlatformPlugin getPlugin() {

@@ -6,7 +6,7 @@ import org.bukkit.OfflinePlayer;
 import java.util.UUID;
 
 public class SpigotOfflinePlayer implements PlatformOfflinePlayer {
-    private OfflinePlayer offlinePlayer;
+    private final OfflinePlayer offlinePlayer;
 
     public SpigotOfflinePlayer(OfflinePlayer offlinePlayer) {
         this.offlinePlayer = offlinePlayer;

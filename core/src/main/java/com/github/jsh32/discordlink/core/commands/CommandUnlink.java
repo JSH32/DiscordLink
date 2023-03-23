@@ -1,16 +1,15 @@
 package com.github.jsh32.discordlink.core.commands;
 
+import com.github.jsh32.discordlink.core.bot.Bot;
+import com.github.jsh32.discordlink.core.database.PlayerInfo;
 import com.github.jsh32.discordlink.core.framework.PlatformOfflinePlayer;
 import com.github.jsh32.discordlink.core.framework.PlatformPlayer;
 import com.github.jsh32.discordlink.core.framework.PlatformPlugin;
 import com.github.jsh32.discordlink.core.framework.command.CommandSender;
-import com.github.jsh32.discordlink.core.framework.command.annotation.Choice;
 import com.github.jsh32.discordlink.core.framework.command.annotation.Command;
 import com.github.jsh32.discordlink.core.framework.command.annotation.Default;
 import com.github.jsh32.discordlink.core.framework.dependency.annotation.Dependency;
 import com.github.jsh32.discordlink.core.locale.Locale;
-import com.github.jsh32.discordlink.core.bot.Bot;
-import com.github.jsh32.discordlink.core.database.PlayerInfo;
 import io.ebean.DB;
 import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +18,7 @@ import java.util.Optional;
 
 @Command(
         aliases = {"unlink"},
-        permission = "discord.unlink",
-        defaultAllowed = true
+        permission = "discord.unlink"
 )
 public class CommandUnlink {
     @Dependency
@@ -35,13 +33,6 @@ public class CommandUnlink {
     @Default(userOnly = true)
     private boolean unlink(CommandSender sender) {
        return unlink(sender, plugin.getOfflinePlayer(sender.getUuid()), null);
-    }
-
-    @Command(
-            aliases = {"something"}
-    )
-    private boolean something(CommandSender sender, PlatformPlayer player, @Choice({"uno", "dos", "tres"}) String hi) {
-        return true;
     }
 
     /**
@@ -62,14 +53,8 @@ public class CommandUnlink {
             aliases = {"discord"},
             permission = "discord.unlink.player"
     )
-    private boolean unlink(CommandSender sender, String tag) {
-        Member member = bot.getGuild().getMemberByTag(tag);
-        if (member != null) {
-            return unlink(sender, null, member.getId());
-        } else {
-            sender.sendMessage(locale.getElement("unlink.account_invalid").error());
-            return false;
-        }
+    private boolean unlink(CommandSender sender, Member member) {
+        return unlink(sender, null, member.getId());
     }
 
     private boolean unlink(CommandSender sender, @Nullable PlatformOfflinePlayer offlinePlayer, @Nullable String discordId) {

@@ -16,9 +16,4 @@ public @interface Command {
     String[] aliases();
     String permission() default "";
     boolean userOnly() default false;
-
-    /**
-     * Is this allowed by default.
-     */
-    boolean defaultAllowed() default false;
 }

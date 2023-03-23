@@ -1,8 +1,8 @@
 package com.github.jsh32.discordlink.core.bot;
 
+import com.github.jsh32.discordlink.core.DiscordLink;
 import com.github.jsh32.discordlink.core.bot.listeners.CrossChatListener;
 import com.github.jsh32.discordlink.core.bot.listeners.VerificationListener;
-import com.github.jsh32.discordlink.core.DiscordLink;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.neovisionaries.ws.client.DualStackMode;
 import com.neovisionaries.ws.client.WebSocketFactory;
