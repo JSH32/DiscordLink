@@ -1,18 +1,12 @@
 name: DiscordLink
 version: "${version}"
-main: com.github.riku32.discordlink.spigot.DiscordLinkSpigot
+main: com.github.jsh32.discordlink.spigot.DiscordLinkSpigot
 api-version: 1.16
 prefix: DiscordLink
 load: STARTUP
-authors: [ Riku32 ]
+authors: [ JSH32 ]
 description: Discord to minecraft bridge
 website: https://github.com/Riku32/DiscordLink
-commands:
-  discord:
-    description: Access the DiscordLink plugin
-    aliases: [discordlink, dl]
-    permission: discord.use
-    permission-message: "You are lacking the permission node 'discord.use'"
 permissions:
   discord.use:
     default: true
