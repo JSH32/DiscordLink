@@ -11,6 +11,8 @@ import com.github.jsh32.discordlink.spigot.events.MainListener;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -106,6 +108,16 @@ public final class DiscordLinkSpigot extends JavaPlugin implements PlatformPlugi
 
         command = new SpigotCommand(this, playerRegistry);
         command.registerCommands(compiledCommand);
+    }
+
+    @Override
+    public void addPermission(String node, boolean isDefault) {
+        // We do not handle permission unloading.
+        try {
+            Bukkit.getPluginManager().addPermission(new Permission(node, isDefault
+                    ? PermissionDefault.TRUE
+                    : PermissionDefault.FALSE));
+        } catch (Exception ignored) {}
     }
 
     @Override

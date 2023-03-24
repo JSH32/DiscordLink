@@ -73,6 +73,12 @@ public interface PlatformPlugin {
     void registerCommands(List<CompiledCommand> compiledCommand);
 
     /**
+     * Register a permission node.
+     * On platforms where permissions may not exist this permission will just require OP if not allowed by default.
+     */
+    void addPermission(String node, boolean isDefault);
+
+    /**
      * Broadcast a message across the whole server
      *
      * @param message to broadcast

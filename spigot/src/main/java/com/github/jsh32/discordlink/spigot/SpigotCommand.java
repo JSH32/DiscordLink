@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -41,20 +42,22 @@ public class SpigotCommand {
     private Argument<Member> memberArgument(String nodeName) {
         // Construct our CustomArgument that takes in a String input and returns a World object
         return new CustomArgument<>(new TextArgument(nodeName), (input) -> {
-            String[] tag = input.input().split("\\.");
-
-            if (tag.length < 2) {
+            String parsed = input.currentInput();
+            int lastIndex = parsed.lastIndexOf(".");
+            if (lastIndex == -1) {
                 throw new CustomArgument.CustomArgumentException(
-                        new CustomArgument.MessageBuilder("Invalid tag:").appendArgInput());
+                        new CustomArgument.MessageBuilder("Invalid tag: ").appendArgInput());
             }
 
-            Member member = plugin.getDiscordLink().getBot().getGuild().getMemberByTag(tag[0], tag[1]);
-            if (member == null) {
+            try {
+                return Objects.requireNonNull(plugin.getDiscordLink().getBot().getGuild().getMemberByTag(
+                        parsed.substring(0, lastIndex),
+                        parsed.substring(lastIndex + 1)
+                ));
+            } catch (Exception ignored) {
                 throw new CustomArgument.CustomArgumentException(
-                        new CustomArgument.MessageBuilder("Invalid member:").appendArgInput());
+                        new CustomArgument.MessageBuilder("Invalid member: ").appendArgInput());
             }
-
-            return member;
         }).replaceSuggestions(ArgumentSuggestions.strings(info ->
             plugin.getDiscordLink().getBot().getGuild().getMemberCache().stream().filter(u -> {
                 User user = u.getUser();
@@ -89,7 +92,7 @@ public class SpigotCommand {
             throw new IllegalArgumentException("Invalid argument type");
         }).collect(Collectors.toList());
 
-        CommandAPICommand apiCommand = new CommandAPICommand(aliases[0])
+        return new CommandAPICommand(aliases[0])
                 .withPermission(command.getAnnotation().permission())
                 .withArguments(args)
                 .withAliases(Arrays.copyOfRange(command.getAliases(), 1, aliases.length))
@@ -116,8 +119,6 @@ public class SpigotCommand {
                 }, explicitPlayerOnly || command.isUserOnly()
                         ? new ExecutorType[]{ ExecutorType.PLAYER }
                         : new ExecutorType[]{ ExecutorType.PLAYER, ExecutorType.CONSOLE });
-
-        return apiCommand;
     }
 
     public void registerCommands(List<CompiledCommand> commands) {

@@ -48,9 +48,6 @@ public class CompiledCommand {
         Method baseMethod = defaultHandlers.iterator().next();
         baseCommand = new CommandData(command, locale, baseMethod, true, getArguments(baseMethod), baseMethod.getAnnotation(Default.class).userOnly());
 
-        if (baseMethod.getReturnType() != boolean.class)
-            throw new CommandCompileException("Command must return a boolean");
-
         if (!baseMethod.getParameterTypes()[0].equals(CommandSender.class))
             throw new CommandCompileException("Command handler's first argument must be a CommandSender");
 

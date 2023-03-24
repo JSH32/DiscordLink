@@ -2,6 +2,7 @@ package com.github.jsh32.discordlink.core;
 
 import club.minnced.discord.webhook.WebhookClient;
 import com.github.jsh32.discordlink.core.bot.Bot;
+import com.github.jsh32.discordlink.core.commands.CommandCancel;
 import com.github.jsh32.discordlink.core.commands.CommandLink;
 import com.github.jsh32.discordlink.core.commands.CommandUnlink;
 import com.github.jsh32.discordlink.core.config.Config;
@@ -139,15 +140,22 @@ public class DiscordLink {
         }
 
         try {
-            registerCommand(new CommandLink());
-            registerCommand(new CommandUnlink());
+            plugin.addPermission("discordlink.link", true);
+            plugin.addPermission("discordlink.unlink", true);
+            plugin.addPermission("discordlink.unlink.player", false);
+
+            registerCommands(
+                new CommandLink(),
+                new CommandUnlink(),
+                new CommandCancel()
+            );
         } catch (Exception e) {
             e.printStackTrace();
             disable(false);
         }
     }
 
-    private void registerCommand(Object... commands) {
+    private void registerCommands(Object... commands) {
         ArrayList<CompiledCommand> compiledCommands = new ArrayList<>();
         for (var command : commands) {
             try {
@@ -166,15 +174,9 @@ public class DiscordLink {
         // For some reason it does not work without this
         try {
             switch (config.getDatabaseSettings().platform) {
-                case H2:
-                    Class.forName("org.h2.Driver");
-                    break;
-                case POSTGRES:
-                    Class.forName("org.postgresql.Driver");
-                    break;
-                case MYSQL:
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    break;
+                case H2 -> Class.forName("org.h2.Driver");
+                case POSTGRES -> Class.forName("org.postgresql.Driver");
+                case MYSQL -> Class.forName("com.mysql.cj.jdbc.Driver");
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();

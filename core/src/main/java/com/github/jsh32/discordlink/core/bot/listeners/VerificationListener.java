@@ -11,6 +11,7 @@ import com.github.jsh32.discordlink.core.locale.Locale;
 import com.github.jsh32.discordlink.core.util.TextUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.MessageBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -37,9 +38,10 @@ public class VerificationListener extends ListenerAdapter {
         if (!event.getComponentId().startsWith("link.")) return;
 
         bot.getGuild().retrieveMemberById(event.getUser().getId()).queue(member -> {
-            Objects.requireNonNull(event.getMessage()).editMessage(new MessageBuilder()
+            Message message = Objects.requireNonNull(event.getMessage());
+            message.editMessage(new MessageBuilder()
                     .setContent(" ")
-                    .setActionRows(ActionRow.of(event.getMessage().getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())
+                    .setActionRows(ActionRow.of(message.getButtons().stream().map(Button::asDisabled).collect(Collectors.toList())
                     )).build()).queue();
 
             Verification verification;
@@ -111,7 +113,6 @@ public class VerificationListener extends ListenerAdapter {
                             player.setGameMode(plugin.getPlugin().getDefaultGameMode());
                         }
                     }
-
                 }
                 case "link.cancel" -> {
                     event.replyEmbeds(new EmbedBuilder()

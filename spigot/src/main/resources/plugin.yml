@@ -8,5 +8,5 @@ authors: [ JSH32 ]
 description: Discord to minecraft bridge
 website: https://github.com/Riku32/DiscordLink
 permissions:
-  discord.use:
+  discordlink.use:
     default: true

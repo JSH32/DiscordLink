@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Command(
         aliases = {"unlink"},
-        permission = "discord.unlink"
+        permission = "discordlink.unlink"
 )
 public class CommandUnlink {
     @Dependency
@@ -31,8 +31,8 @@ public class CommandUnlink {
     private Bot bot;
 
     @Default(userOnly = true)
-    private boolean unlink(CommandSender sender) {
-       return unlink(sender, plugin.getOfflinePlayer(sender.getUuid()), null);
+    private void unlink(CommandSender sender) {
+        unlink(sender, plugin.getOfflinePlayer(sender.getUuid()), null);
     }
 
     /**
@@ -40,10 +40,10 @@ public class CommandUnlink {
      */
     @Command(
             aliases = {"minecraft"},
-            permission = "discord.unlink.player"
+            permission = "discordlink.unlink.player"
     )
-    private boolean unlink(CommandSender sender, PlatformPlayer player) {
-        return unlink(sender, plugin.getOfflinePlayer(player.getUuid()), null);
+    private void unlink(CommandSender sender, PlatformPlayer player) {
+        unlink(sender, plugin.getOfflinePlayer(player.getUuid()), null);
     }
 
     /**
@@ -51,13 +51,13 @@ public class CommandUnlink {
      */
     @Command(
             aliases = {"discord"},
-            permission = "discord.unlink.player"
+            permission = "discordlink.unlink.player"
     )
-    private boolean unlink(CommandSender sender, Member member) {
-        return unlink(sender, null, member.getId());
+    private void unlink(CommandSender sender, Member member) {
+        unlink(sender, null, member.getId());
     }
 
-    private boolean unlink(CommandSender sender, @Nullable PlatformOfflinePlayer offlinePlayer, @Nullable String discordId) {
+    private void unlink(CommandSender sender, @Nullable PlatformOfflinePlayer offlinePlayer, @Nullable String discordId) {
         Optional<PlayerInfo> playerInfoOptional = Optional.empty();
         if (offlinePlayer != null) {
             playerInfoOptional = PlayerInfo.find.byUuidOptional(offlinePlayer.getUuid());
@@ -67,11 +67,17 @@ public class CommandUnlink {
 
         if (playerInfoOptional.isEmpty()) {
             sender.sendMessage(locale.getElement("unlink.not_linked").error());
-            return false;
+            return;
         }
 
         // Remove linking data for the player.
         PlayerInfo playerInfo = playerInfoOptional.get();
+
+        if (!playerInfo.verified) {
+            sender.sendMessage(locale.getElement("unlink.not_verified").error());
+            return;
+        }
+
         DB.delete(playerInfo);
 
         bot.getJda().retrieveUserById(playerInfo.discordId).queue(member -> {
@@ -80,7 +86,5 @@ public class CommandUnlink {
                     .set("discord_tag", member.getAsTag())
                     .success());
         });
-
-        return true;
     }
 }
