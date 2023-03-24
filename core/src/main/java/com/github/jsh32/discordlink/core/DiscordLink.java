@@ -48,6 +48,7 @@ public class DiscordLink {
 
     private final Set<PlatformPlayer> frozenPlayers = new HashSet<>();
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public DiscordLink(PlatformPlugin plugin) {
         this.plugin = plugin;
         LOGGER = plugin.getLogger();
@@ -115,7 +116,6 @@ public class DiscordLink {
         } catch (LoginException | InterruptedException e) {
             e.printStackTrace();
             disable(false);
-            return;
         }
     }
 
@@ -160,7 +160,7 @@ public class DiscordLink {
         for (var command : commands) {
             try {
                 injector.injectDependencies(command);
-                compiledCommands.add(new CompiledCommand(command, locale));
+                compiledCommands.add(new CompiledCommand(command));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

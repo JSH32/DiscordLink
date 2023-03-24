@@ -75,17 +75,17 @@ public class SpigotCommand {
         String[] aliases = command.getAliases();
 
         List<Argument<?>> args = command.getArguments().stream().map(arg -> {
-            if (arg.getArgumentType().equals(boolean.class)) {
-                return new BooleanArgument(arg.getArgumentName());
-            } else if (arg.getArgumentType().equals(String.class)) {
-                if (arg.getChoices() == null)
-                    return new TextArgument(arg.getArgumentName());
+            if (arg.argumentType().equals(boolean.class)) {
+                return new BooleanArgument(arg.argumentName());
+            } else if (arg.argumentType().equals(String.class)) {
+                if (arg.choices() == null)
+                    return new TextArgument(arg.argumentName());
 
-                return new MultiLiteralArgument(arg.getChoices());
-            } else if (arg.getArgumentType().equals(PlatformPlayer.class)) {
-                return new PlayerArgument(arg.getArgumentName());
-            } else if (arg.getArgumentType().equals(Member.class)) {
-                return memberArgument(arg.getArgumentName());
+                return new MultiLiteralArgument(arg.choices());
+            } else if (arg.argumentType().equals(PlatformPlayer.class)) {
+                return new PlayerArgument(arg.argumentName());
+            } else if (arg.argumentType().equals(Member.class)) {
+                return memberArgument(arg.argumentName());
             }
 
             // This should never happen due to the command compiler checks.
@@ -93,7 +93,7 @@ public class SpigotCommand {
         }).collect(Collectors.toList());
 
         return new CommandAPICommand(aliases[0])
-                .withPermission(command.getAnnotation().permission())
+                .withPermission(CommandPermission.fromString(command.getPermission()))
                 .withArguments(args)
                 .withAliases(Arrays.copyOfRange(command.getAliases(), 1, aliases.length))
                 .executes((sender, cmdArgs) -> {
@@ -112,8 +112,8 @@ public class SpigotCommand {
                     }
 
                     try {
-                        command.getMethod().invoke(command.getInstance(), fullArgs.toArray());
-                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        command.invoke(fullArgs.toArray());
+                    } catch (InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 }, explicitPlayerOnly || command.isUserOnly()
